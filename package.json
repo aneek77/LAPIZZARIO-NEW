@@ -1,0 +1,8 @@
+{
+  "name": "la-pizzario",
+  "version": "1.0.0",
+  "description": "La Pizzario online ordering — customer site, staff dashboard, and backend with automatic Razorpay payment verification",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" }
+}

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Pizzariô — Staff Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,900&family=Karla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F4EEDE;--cream:#FFFAEE;--ink:#241F16;--ink-soft:#5C5343;
+  --basil:#1E5B38;--basil-deep:#123A24;--brick:#A8271F;--brick-deep:#7E1712;
+  --gold:#D9A441;--gold-soft:#F0D9A8;--line:#E0D2B4;
+  --blue:#1F5FA8;--shadow:0 8px 26px rgba(36,31,22,.13);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Karla',sans-serif;background:var(--paper);color:var(--ink);line-height:1.45;min-height:100vh}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:4px}
+.awning{height:12px;background:repeating-linear-gradient(90deg,var(--brick) 0 32px,var(--cream) 32px 64px)}
+
+header{position:sticky;top:0;z-index:50;background:var(--basil-deep);color:var(--cream);box-shadow:0 4px 16px rgba(0,0,0,.25)}
+.nav{max-width:1360px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.logo{font-family:'Fraunces',serif;font-weight:900;font-size:1.4rem}
+.logo em{font-style:normal;color:var(--gold)}
+.logo small{display:block;font-size:.6rem;font-weight:700;letter-spacing:.26em;text-transform:uppercase;color:var(--gold-soft)}
+.who{margin-left:auto;display:flex;align-items:center;gap:10px;font-weight:700;font-size:.85rem;flex-wrap:wrap}
+.who .pill{background:rgba(255,255,255,.14);padding:6px 14px;border-radius:999px}
+.btn{display:inline-flex;align-items:center;gap:7px;font-weight:800;border-radius:999px;padding:9px 16px;font-size:.83rem;transition:transform .1s}
+.btn:active{transform:translateY(1px)}
+.btn-gold{background:var(--gold);color:var(--ink)}
+.btn-ghost{border:1.5px solid rgba(255,255,255,.45);color:var(--cream)}
+.btn-green{background:var(--basil);color:#fff}
+.btn-red{background:var(--brick);color:#fff}
+.btn-blue{background:var(--blue);color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+.wrap{max-width:1360px;margin:0 auto;padding:22px 20px 80px}
+
+/* Login gate */
+.gate{max-width:420px;margin:9vh auto;background:var(--cream);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.gate-head{background:var(--basil-deep);color:var(--cream);padding:22px;text-align:center}
+.gate-head h1{font-family:'Fraunces',serif;font-weight:900;font-size:1.5rem}
+.gate-head h1 em{font-style:normal;color:var(--gold)}
+.gate-head p{font-size:.8rem;color:var(--gold-soft);font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-top:4px}
+.gate-body{padding:24px}
+.field{margin-bottom:15px}
+.field label{display:block;font-weight:800;font-size:.8rem;margin-bottom:6px}
+.field input,.field select{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;font-family:inherit;font-size:.95rem;background:#fff}
+.field input:focus,.field select:focus{outline:none;border-color:var(--basil);box-shadow:0 0 0 3px rgba(30,91,56,.14)}
+.gate-err{color:var(--brick);font-weight:800;font-size:.82rem;margin:-6px 0 12px;display:none}
+.gate-btn{width:100%;background:var(--brick);color:#fff;font-weight:900;font-size:1rem;padding:14px;border-radius:12px;box-shadow:0 4px 0 var(--brick-deep)}
+.gate-btn:active{transform:translateY(3px);box-shadow:none}
+.gate-note{font-size:.72rem;color:var(--ink-soft);margin-top:14px;text-align:center}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.stat b{font-family:'Fraunces',serif;font-size:1.7rem;font-weight:900;display:block}
+.stat span{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.stat.hot{background:linear-gradient(140deg,var(--brick),var(--brick-deep));color:#fff;border:none}
+.stat.hot span{color:rgba(255,255,255,.8)}
+.stat.money{background:linear-gradient(140deg,var(--basil),var(--basil-deep));color:#fff;border:none}
+.stat.money span{color:rgba(255,255,255,.8)}
+
+/* Toolbar */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.toolbar input,.toolbar select{border:1.5px solid var(--line);border-radius:999px;padding:9px 16px;font-family:inherit;font-size:.86rem;background:var(--cream)}
+.toolbar input{flex:1;min-width:180px}
+.refresh-note{font-size:.72rem;color:var(--ink-soft);font-weight:700;margin-left:auto}
+
+/* Tabs */
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:18px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;border:1.5px solid var(--line);background:var(--cream);color:var(--ink-soft);font-weight:800;font-size:.83rem;padding:9px 16px;border-radius:999px;display:flex;gap:8px;align-items:center}
+.tab .n{background:var(--paper);border-radius:999px;min-width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:.72rem;padding:0 6px}
+.tab.on{background:var(--basil-deep);border-color:var(--basil-deep);color:var(--cream)}
+.tab.on .n{background:var(--gold);color:var(--ink)}
+
+/* Order cards */
+.orders{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.card{background:var(--cream);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.card-head{padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px dashed var(--line)}
+.oid{font-family:'Fraunces',serif;font-weight:900;font-size:1.02rem}
+.time{font-size:.72rem;color:var(--ink-soft);font-weight:700}
+.status{margin-left:auto;font-size:.66rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;padding:5px 11px;border-radius:999px}
+.st-PAID{background:#DDEEDD;color:var(--basil)}
+.st-PREPARING{background:#FADCD9;color:var(--brick)}
+.st-READY{background:#D7E9FB;color:var(--blue)}
+.st-DONE{background:#E8E4D8;color:var(--ink-soft)}
+.st-CANCELLED{background:var(--brick);color:#fff}
+.st-CREATED{background:#FCE8C8;color:#8a5f0e}
+.st-COD{background:#FCE8C8;color:#8a5f0e}
+.cod-box{background:#FCF3DC;border:1.5px solid var(--gold);border-radius:10px;padding:9px 12px;margin-top:10px;font-size:.78rem;font-weight:700;color:#7a5a12}
+.card-body{padding:12px 16px;font-size:.85rem;flex:1}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--ink-soft);font-weight:700;font-size:.78rem;margin-bottom:9px}
+.items{border-top:1px dashed var(--line);padding-top:8px;margin-top:2px}
+.it-row{display:flex;justify-content:space-between;gap:10px;padding:2px 0}
+.it-row span:last-child{font-weight:800;white-space:nowrap}
+.tot{display:flex;justify-content:space-between;font-weight:900;font-size:.98rem;border-top:2px solid var(--line);margin-top:8px;padding-top:8px}
+.save{color:var(--basil);font-weight:800}
+.paid-box{background:#E9F3EA;border:1.5px solid var(--basil);border-radius:10px;padding:9px 12px;margin-top:10px;font-size:.78rem;font-weight:700;color:var(--basil-deep)}
+.paid-box small{display:block;font-weight:600;color:var(--ink-soft);font-family:monospace;margin-top:2px}
+.notes-box{background:#FBF6E8;border-radius:10px;padding:8px 12px;margin-top:8px;font-size:.78rem;font-style:italic}
+.reject-reason{background:#FADCD9;border-radius:10px;padding:8px 12px;margin-top:8px;font-size:.78rem;font-weight:700;color:var(--brick-deep)}
+.card-actions{padding:12px 16px;border-top:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;background:var(--paper)}
+.card-actions .btn{flex:1;justify-content:center;padding:11px 10px;border-radius:10px}
+.hist{font-size:.68rem;color:var(--ink-soft);padding:0 16px 12px;background:var(--paper)}
+.empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--ink-soft)}
+.empty b{display:block;font-size:2.6rem;margin-bottom:10px}
+.scrim{position:fixed;inset:0;background:rgba(20,16,10,.6);z-index:100;display:none;align-items:center;justify-content:center;padding:16px}
+.scrim.show{display:flex}
+.modal{background:var(--cream);border-radius:18px;max-width:440px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 70px rgba(0,0,0,.45)}
+.modal-head{background:var(--basil-deep);color:var(--cream);padding:15px 20px;display:flex;align-items:center}
+.modal-head h3{font-family:'Fraunces',serif;font-weight:900;font-size:1.1rem}
+.modal-close{margin-left:auto;color:var(--cream);font-size:1.5rem;line-height:1;padding:2px 8px;border-radius:8px;cursor:pointer}
+.modal-body{padding:18px 20px}
+.drv-row{display:flex;align-items:center;gap:10px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:11px 14px;margin-bottom:8px}
+.drv-row .av{flex:none;width:36px;height:36px;border-radius:50%;background:var(--gold);color:var(--ink);display:grid;place-items:center;font-weight:900;font-family:'Fraunces',serif}
+.drv-row b{display:block;font-size:.9rem}
+.drv-row small{color:var(--ink-soft);font-weight:700;font-size:.75rem}
+.drv-row .act{margin-left:auto;display:flex;gap:6px}
+.drv-pick{width:100%;text-align:left;cursor:pointer}
+.drv-pick:hover{border-color:var(--basil);background:#E9F3EA}
+.drv-x{color:var(--brick);font-weight:900;font-size:1rem;padding:4px 9px;border-radius:8px;cursor:pointer}
+.drv-x:hover{background:#FADCD9}
+.drv-form{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-top:10px}
+.drv-form input{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-family:inherit;font-size:.86rem;background:#fff;min-width:0}
+.drv-form button{background:var(--basil);color:#fff;font-weight:900;border-radius:10px;padding:0 16px}
+.drv-empty{color:var(--ink-soft);font-size:.83rem;text-align:center;padding:12px 0}
+.drv-hint{font-size:.72rem;color:var(--ink-soft);font-weight:700;margin-top:10px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,20px);background:var(--ink);color:var(--cream);font-weight:700;font-size:.86rem;padding:11px 22px;border-radius:999px;z-index:130;opacity:0;pointer-events:none;transition:all .25s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.newflash{animation:flash 1.6s ease 2}
+@keyframes flash{0%,100%{box-shadow:var(--shadow)}50%{box-shadow:0 0 0 4px var(--gold)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN GATE ===== -->
+<div id="gateView">
+  <div class="awning"></div>
+  <div class="gate">
+    <div class="gate-head">
+      <h1>La <em>Pizzariô</em></h1>
+      <p>Staff Dashboard</p>
+    </div>
+    <div class="gate-body">
+      <div class="field">
+        <label for="gBranch">Branch</label>
+        <select id="gBranch"><option value="ALL">🏢 All Branches (Admin)</option></select>
+      </div>
+      <div class="field">
+        <label for="gPin">Staff PIN</label>
+        <input id="gPin" type="password" inputmode="numeric" maxlength="8" placeholder="Enter staff PIN">
+      </div>
+      <div class="gate-err" id="gErr">Incorrect PIN. Please try again.</div>
+      <button class="gate-btn" onclick="login()">Open Dashboard →</button>
+      <p class="gate-note">✅ Online payments are verified automatically by the gateway.<br>💵 Cash-on-delivery orders show the amount to collect.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div id="dashView" style="display:none">
+  <header>
+    <div class="awning"></div>
+    <div class="nav">
+      <div class="logo">La <em>Pizzariô</em><small>Staff Dashboard</small></div>
+      <div class="who">
+        <span class="pill" id="whoBranch">—</span>
+        <button class="btn btn-gold" onclick="openDrivers()">🛵 Drivers</button>
+        <button class="btn btn-gold" onclick="loadOrders(true)">↻ Refresh</button>
+        <button class="btn btn-ghost" onclick="logout()">Log out</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="stats" id="stats"></div>
+    <div class="toolbar">
+      <input id="q" placeholder="🔍 Search order ID, name or phone…" oninput="renderOrders()">
+      <select id="branchFilter" onchange="renderAll()" style="display:none"></select>
+      <span class="refresh-note" id="lastSync">—</span>
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <div class="orders" id="orders"></div>
+  </div>
+</div>
+
+<div class="scrim" id="mScrim">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head"><h3 id="mTitle">Drivers</h3><span class="modal-close" onclick="closeModal()" aria-label="Close">×</span></div>
+    <div class="modal-body" id="mBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const BRANCHES = ['Bidhannagar','Chandidas','S.B. More','Prantika','Raniganj','Asansol','Bolpur'];
+const TABS = ['PAID','COD','PREPARING','READY','DONE','CANCELLED','CREATED'];
+const ST_LABEL = {
+  PAID:'🆕 New — Paid ✓', COD:'💵 New — Cash on Delivery', PREPARING:'🍳 Preparing', READY:'📦 Ready / Out for Delivery',
+  DONE:'🎉 Completed', CANCELLED:'⛔ Cancelled', CREATED:'💤 Unpaid / Abandoned'
+};
+const INR = n => '₹' + Number(n||0).toLocaleString('en-IN');
+
+let me = {branch:'ALL', pin:''};
+let orders = [];
+let activeTab = 'PAID';
+let knownPaid = new Set();
+let firstLoad = true;
+let pollTimer = null;
+
+(function initGate(){
+  const sel = document.getElementById('gBranch');
+  BRANCHES.forEach(b=>{const o=document.createElement('option');o.value=b;o.textContent='📍 '+b;sel.appendChild(o);});
+})();
+
+async function api(path, opts){
+  opts = opts || {};
+  opts.headers = Object.assign({'x-staff-pin': me.pin, 'Content-Type':'application/json'}, opts.headers||{});
+  const res = await fetch(path, opts);
+  const data = await res.json().catch(()=>({ok:false,error:'Bad response'}));
+  if(res.status === 401) throw new Error('PIN');
+  if(!res.ok || !data.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+async function login(){
+  me.pin = document.getElementById('gPin').value.trim();
+  me.branch = document.getElementById('gBranch').value;
+  try{
+    await api('/api/staff/orders?branch=' + encodeURIComponent(me.branch));
+  }catch(e){
+    document.getElementById('gErr').textContent = e.message==='PIN' ? 'Incorrect PIN. Please try again.' : ('Could not connect: '+e.message);
+    document.getElementById('gErr').style.display='block';
+    return;
+  }
+  document.getElementById('gErr').style.display='none';
+  document.getElementById('gateView').style.display='none';
+  document.getElementById('dashView').style.display='block';
+  document.getElementById('whoBranch').textContent = me.branch==='ALL' ? '🏢 All Branches (Admin)' : '📍 '+me.branch;
+  const bf = document.getElementById('branchFilter');
+  if(me.branch==='ALL'){
+    bf.style.display='inline-block';
+    bf.innerHTML = '<option value="ALL">All branches</option>' + BRANCHES.map(b=>`<option>${b}</option>`).join('');
+  }
+  firstLoad = true;
+  loadOrders(true);
+  pollTimer = setInterval(()=>loadOrders(false), 10000);
+}
+function logout(){
+  clearInterval(pollTimer);
+  me.pin='';
+  document.getElementById('dashView').style.display='none';
+  document.getElementById('gateView').style.display='block';
+  document.getElementById('gPin').value='';
+}
+document.getElementById('gPin').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
+
+async function loadOrders(manual){
+  try{
+    const d = await api('/api/staff/orders?branch=' + encodeURIComponent(me.branch));
+    orders = d.orders || [];
+    const freshPaid = orders.filter(o=>(o.status==='PAID'||o.status==='COD') && !knownPaid.has(o.oid));
+    orders.filter(o=>o.status!=='CREATED').forEach(o=>knownPaid.add(o.oid));
+    if(!firstLoad && freshPaid.length){
+      toast('🔔 ' + freshPaid.length + ' new paid order' + (freshPaid.length>1?'s':'') + ' — start cooking!');
+      ping();
+    } else if(manual) toast('Orders refreshed');
+    firstLoad = false;
+    document.getElementById('lastSync').textContent = 'Auto-refreshes every 10s · Last sync ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    renderAll(freshPaid.map(o=>o.oid));
+  }catch(e){
+    if(e.message==='PIN'){ logout(); return; }
+    document.getElementById('lastSync').textContent = 'Sync failed — tap Refresh';
+  }
+}
+
+function visibleOrders(){
+  let list = orders;
+  if(me.branch==='ALL'){
+    const bf = document.getElementById('branchFilter').value;
+    if(bf && bf!=='ALL') list = list.filter(o=>o.branch===bf);
+  }
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  if(q) list = list.filter(o=>(o.oid+' '+o.name+' '+o.phone).toLowerCase().includes(q));
+  return list;
+}
+function ago(ts){
+  const m = Math.floor((Date.now()-ts)/60000);
+  if(m<1)return 'just now'; if(m<60)return m+' min ago';
+  const h=Math.floor(m/60); if(h<24)return h+'h '+(m%60)+'m ago';
+  return new Date(ts).toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+}
+function isToday(ts){const d=new Date(ts),n=new Date();return d.getDate()===n.getDate()&&d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}
+
+function renderAll(flashIds){
+  renderStats(); renderTabs(); renderOrders(flashIds||[]);
+}
+function renderStats(){
+  const list = visibleOrders();
+  const today = list.filter(o=>isToday(o.ts) && o.status!=='CREATED' && o.status!=='CANCELLED');
+  const fresh = list.filter(o=>o.status==='PAID'||o.status==='COD').length;
+  const cooking = list.filter(o=>o.status==='PREPARING').length;
+  const revenue = today.reduce((s,o)=> s + ((o.pay==='COD' && o.status!=='DONE') ? 0 : o.total), 0);
+  document.getElementById('stats').innerHTML = `
+    <div class="stat hot"><b>${fresh}</b><span>New Paid Orders</span></div>
+    <div class="stat"><b>${cooking}</b><span>In the Kitchen</span></div>
+    <div class="stat"><b>${today.length}</b><span>Paid Orders Today</span></div>
+    <div class="stat money"><b>${INR(revenue)}</b><span>Revenue Today (Paid)</span></div>`;
+}
+function renderTabs(){
+  const list = visibleOrders();
+  document.getElementById('tabs').innerHTML = TABS.map(s=>{
+    const n = list.filter(o=>o.status===s).length;
+    return `<button class="tab ${activeTab===s?'on':''}" onclick="activeTab='${s}';renderTabs();renderOrders()">${ST_LABEL[s]} <span class="n">${n}</span></button>`;
+  }).join('');
+}
+function renderOrders(flashIds){
+  flashIds = flashIds||[];
+  const list = visibleOrders().filter(o=>o.status===activeTab);
+  const box = document.getElementById('orders');
+  if(list.length===0){
+    box.innerHTML = `<div class="empty"><b>${activeTab==='PAID'?'💤':'🍕'}</b>No orders in “${ST_LABEL[activeTab]}”${activeTab==='PAID'?'<br>New paid orders appear here automatically — payment already verified.':''}</div>`;
+    return;
+  }
+  box.innerHTML = list.map(o=>{
+    const items = (o.items||[]).map(i=>`<div class="it-row"><span>${i.name}${i.variant?' ('+i.variant+')':''}${i.opt?' · <b>'+i.opt+'</b>':''} × ${i.qty}</span><span>${INR(i.price*i.qty)}</span></div>`).join('');
+    const last = (o.history||[]).slice(-3).map(h=>`${h.s.toLowerCase()} ${new Date(h.t).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}`).join(' → ');
+    return `
+    <article class="card ${flashIds.includes(o.oid)?'newflash':''}">
+      <div class="card-head">
+        <div><div class="oid">${o.oid}</div><div class="time">${ago(o.ts)} · ${new Date(o.ts).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</div></div>
+        <span class="status st-${o.status}">${o.status}</span>
+      </div>
+      <div class="card-body">
+        <div class="meta">
+          <span>👤 ${o.name}</span>
+          <span>📞 <a href="tel:+91${o.phone}" style="color:inherit">${o.phone}</a></span>
+          <span>${o.type==='Delivery'?'🛵 Delivery':'🏪 Pickup'}</span>
+          <span>📍 ${o.branch}</span>
+        </div>
+        ${o.type==='Delivery'&&o.address?`<div style="font-size:.8rem;margin-bottom:8px">🏠 ${o.address}</div>`:''}
+        <div class="items">${items}
+          ${o.discount>0?`<div class="it-row save"><span>BOGO discount</span><span>−${INR(o.discount)}</span></div>`:''}
+          <div class="tot"><span>Total</span><span>${INR(o.total)}</span></div>
+        </div>
+        ${o.status==='CREATED'
+          ? `<div class="notes-box">💤 Customer opened payment but hasn't completed it. Do NOT prepare.</div>`
+          : o.pay==='COD'
+            ? `<div class="cod-box">💵 CASH ${o.type==='Delivery'?'ON DELIVERY':'ON PICKUP'} — collect <b>${INR(o.total)}</b> from the customer${o.status==='DONE'?' ✓ collected':''}</div>`
+            : `<div class="paid-box">✅ PAID ${INR(o.total)} — verified automatically by Razorpay<small>Payment ID: ${o.paymentId||'—'} · ${o.paidAt?new Date(o.paidAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):''}</small></div>`}
+        ${o.driver&&o.driver.name?`<div class="notes-box" style="font-style:normal;font-weight:700">🛵 Rider: ${o.driver.name}${o.driver.phone?' · <a href="tel:+91'+o.driver.phone+'" style="color:inherit">'+o.driver.phone+'</a>':''}</div>`:''}
+        ${o.notes?`<div class="notes-box">📝 ${o.notes}</div>`:''}
+        ${o.status==='CANCELLED'&&o.cancelReason?`<div class="reject-reason">⛔ ${o.cancelReason} — refund via Razorpay dashboard if payment was captured.</div>`:''}
+      </div>
+      ${actionButtons(o)?`<div class="card-actions">${actionButtons(o)}</div>`:''}
+      ${last?`<div class="hist">History: ${last}</div>`:''}
+    </article>`;
+  }).join('');
+}
+function actionButtons(o){
+  switch(o.status){
+    case 'PAID':
+    case 'COD': return `<button class="btn btn-blue" onclick="setStatus('${o.oid}','PREPARING')">🍳 Start preparing</button><button class="btn btn-red" onclick="cancelOrder('${o.oid}')">⛔ Cancel</button>`;
+    case 'PREPARING': return o.type==='Delivery'
+      ? `<button class="btn btn-green" onclick="openDriverPick('${o.oid}')">🛵 Out for delivery — assign rider</button><button class="btn btn-red" onclick="cancelOrder('${o.oid}')">⛔ Cancel</button>`
+      : `<button class="btn btn-green" onclick="setStatus('${o.oid}','READY')">📦 Mark ready</button><button class="btn btn-red" onclick="cancelOrder('${o.oid}')">⛔ Cancel</button>`;
+    case 'READY': return `<button class="btn btn-gold" onclick="setStatus('${o.oid}','DONE')">${o.pay==='COD'?'💵 Cash collected — complete':'🎉 Complete order'}</button>`;
+    default: return '';
+  }
+}
+
+async function setStatus(oid, st, reason, driver){
+  try{
+    await api('/api/staff/orders/'+oid+'/status',{method:'POST',body:JSON.stringify({status:st,reason:reason||'',driver:driver||null})});
+    activeTab = st;
+    toast(oid+' → '+ST_LABEL[st]);
+    loadOrders(false);
+  }catch(e){ toast('⚠️ '+e.message); }
+}
+function cancelOrder(oid){
+  const o = orders.find(x=>x.oid===oid);
+  const reason = prompt('Reason for cancelling '+oid+(o&&o.pay==='COD'?':':' (customer will need a refund via the Razorpay dashboard):'));
+  if(reason===null) return;
+  setStatus(oid,'CANCELLED',reason||'Cancelled by staff');
+}
+
+/* ---------- Drivers ---------- */
+function modalBranch(){
+  if(me.branch!=='ALL') return me.branch;
+  const bf = document.getElementById('branchFilter').value;
+  return (bf && bf!=='ALL') ? bf : BRANCHES[0];
+}
+function closeModal(){ document.getElementById('mScrim').classList.remove('show'); }
+
+async function openDrivers(selBranch){
+  const branch = selBranch || modalBranch();
+  document.getElementById('mTitle').textContent = '🛵 Riders — ' + branch;
+  document.getElementById('mScrim').classList.add('show');
+  const body = document.getElementById('mBody');
+  body.innerHTML = '<div class="drv-empty">Loading…</div>';
+  let drivers = [];
+  try{ drivers = (await api('/api/staff/drivers?branch='+encodeURIComponent(branch))).drivers; }
+  catch(e){ body.innerHTML = '<div class="drv-empty">⚠️ '+e.message+'</div>'; return; }
+  body.innerHTML = `
+    ${me.branch==='ALL' ? `<div style="margin-bottom:12px"><select id="drvBranch" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-family:inherit" onchange="openDrivers(this.value)">${BRANCHES.map(b=>`<option ${b===branch?'selected':''}>${b}</option>`).join('')}</select></div>` : ''}
+    <div id="drvList">
+      ${drivers.length===0 ? '<div class="drv-empty">No riders saved yet — add your delivery riders below.<br>You only do this once.</div>'
+        : drivers.map((d,i)=>`
+        <div class="drv-row">
+          <div class="av">${d.name.trim()[0].toUpperCase()}</div>
+          <div><b>${d.name}</b><small>${d.phone}</small></div>
+          <div class="act"><span class="drv-x" title="Remove" onclick="removeDriver('${branch}',${i})">✕</span></div>
+        </div>`).join('')}
+    </div>
+    <div class="drv-form">
+      <input id="drvName" placeholder="Rider name">
+      <input id="drvPhone" inputmode="numeric" maxlength="10" placeholder="10-digit phone">
+      <button onclick="addDriver('${branch}')">+ Add</button>
+    </div>
+    <div class="drv-hint">These riders appear as one-tap options when you send a delivery order out — the customer instantly sees the rider's name & number on their live tracking page.</div>`;
+}
+async function addDriver(branch){
+  const name = document.getElementById('drvName').value.trim();
+  const phone = document.getElementById('drvPhone').value.trim();
+  try{
+    await api('/api/staff/drivers',{method:'POST',body:JSON.stringify({branch,action:'add',name,phone})});
+    toast('Rider added');
+    openDrivers(branch);
+  }catch(e){ toast('⚠️ '+e.message); }
+}
+async function removeDriver(branch, index){
+  try{
+    await api('/api/staff/drivers',{method:'POST',body:JSON.stringify({branch,action:'remove',index})});
+    openDrivers(branch);
+  }catch(e){ toast('⚠️ '+e.message); }
+}
+
+async function openDriverPick(oid){
+  const o = orders.find(x=>x.oid===oid); if(!o) return;
+  document.getElementById('mTitle').textContent = '🛵 Who is delivering ' + oid + '?';
+  document.getElementById('mScrim').classList.add('show');
+  const body = document.getElementById('mBody');
+  body.innerHTML = '<div class="drv-empty">Loading riders…</div>';
+  let drivers = [];
+  try{ drivers = (await api('/api/staff/drivers?branch='+encodeURIComponent(o.branch))).drivers; }catch(e){}
+  body.innerHTML = `
+    ${drivers.length ? drivers.map(d=>`
+      <button class="drv-row drv-pick" onclick='assignDriver("${oid}", ${JSON.stringify(JSON.stringify(d))})'>
+        <div class="av">${d.name.trim()[0].toUpperCase()}</div>
+        <div><b>${d.name}</b><small>${d.phone}</small></div>
+        <div class="act" style="font-weight:900;color:var(--basil)">Send →</div>
+      </button>`).join('') : '<div class="drv-empty">No saved riders for '+o.branch+' yet — add one below, or use the quick fields.</div>'}
+    <div class="drv-form">
+      <input id="pickName" placeholder="Rider name">
+      <input id="pickPhone" inputmode="numeric" maxlength="10" placeholder="10-digit phone">
+      <button onclick="assignCustom('${oid}','${o.branch}')">Send →</button>
+    </div>
+    <div class="drv-hint">The customer's tracking page updates instantly with this rider's name & call button.</div>`;
+}
+function assignDriver(oid, dJson){
+  const d = JSON.parse(dJson);
+  closeModal();
+  setStatus(oid, 'READY', '', d);
+}
+async function assignCustom(oid, branch){
+  const name = document.getElementById('pickName').value.trim();
+  const phone = document.getElementById('pickPhone').value.trim();
+  if(name.length<2){ toast('⚠️ Enter the rider name'); return; }
+  if(!/^[6-9]\d{9}$/.test(phone)){ toast('⚠️ Enter a valid 10-digit phone'); return; }
+  try{ await api('/api/staff/drivers',{method:'POST',body:JSON.stringify({branch,action:'add',name,phone})}); }catch(e){}
+  closeModal();
+  setStatus(oid, 'READY', '', {name, phone});
+}
+
+/* new-order chime */
+let ac=null;
+function ping(){
+  try{
+    ac = ac || new (window.AudioContext||window.webkitAudioContext)();
+    const o=ac.createOscillator(), g=ac.createGain();
+    o.frequency.value=880; o.type='sine';
+    g.gain.setValueAtTime(.25,ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.6);
+    o.connect(g); g.connect(ac.destination);
+    o.start(); o.stop(ac.currentTime+.6);
+  }catch(e){}
+}
+
+let toastT;
+function toast(t){
+  const el=document.getElementById('toast'); el.textContent=t; el.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),2600);
+}
+</script>
+</body>
+</html>

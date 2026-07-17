@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About Us — La Pizzariô</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,600&family=Karla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#120D08;
+  --black-soft:#1C1510;
+  --gold:#D9A441;
+  --gold-bright:#E8BE62;
+  --gold-soft:#F0D9A8;
+  --cream:#F3E9D2;
+  --cream-dim:#C9BCA0;
+  --red:#A8271F;
+  --line:rgba(217,164,65,.28);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Karla',sans-serif;background:var(--black);color:var(--cream);line-height:1.6;min-height:100vh}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:4px}
+.awning{height:12px;background:repeating-linear-gradient(90deg,var(--red) 0 32px,var(--cream) 32px 64px)}
+
+header{position:sticky;top:0;z-index:50;background:rgba(18,13,8,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.nav{max-width:1200px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{font-family:'Fraunces',serif;font-weight:900;font-size:1.6rem;color:var(--cream);text-decoration:none}
+.logo em{font-style:normal;color:var(--gold)}
+.logo small{display:block;font-family:'Karla';font-weight:700;font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold)}
+.nav-links{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+.nav-links a{font-weight:700;font-size:.84rem;text-decoration:none;padding:8px 14px;border-radius:999px;color:var(--cream-dim)}
+.nav-links a:hover{color:var(--gold-bright)}
+.nav-links a.cta{background:var(--red);color:#fff;box-shadow:0 3px 0 #6d130d}
+
+.hero{max-width:1200px;margin:0 auto;padding:70px 20px 60px;display:grid;grid-template-columns:1fr;gap:44px;align-items:center}
+@media(min-width:900px){.hero{grid-template-columns:1fr 1.05fr;padding-top:80px}}
+.chef-frame{position:relative;border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.chef-frame::after{content:"";position:absolute;inset:10px;border:1px solid rgba(217,164,65,.35);border-radius:14px;pointer-events:none}
+.chef-frame img{display:block;width:100%;height:auto}
+
+.fleur{color:var(--gold);font-size:1.4rem;letter-spacing:.4em;margin-bottom:14px}
+h1{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.05;margin-bottom:6px}
+h1 .gold{color:var(--gold);display:block}
+.rule{display:flex;align-items:center;gap:12px;margin:18px 0 22px;color:var(--gold)}
+.rule::before,.rule::after{content:"";height:1px;flex:1;max-width:70px;background:var(--line)}
+.rule span{font-size:.72rem;font-weight:800;letter-spacing:.34em;text-transform:uppercase;color:var(--gold)}
+.lead{font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:1.2rem;color:var(--gold-soft);margin-bottom:18px}
+.copy{color:var(--cream-dim);font-size:1rem;max-width:56ch;margin-bottom:14px}
+.copy b{color:var(--cream)}
+.copy .gold{color:var(--gold-bright);font-weight:700}
+
+.badges{max-width:1200px;margin:0 auto;padding:10px 20px 70px;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.badge{border:1px solid var(--line);border-radius:16px;padding:22px 20px;text-align:center;background:linear-gradient(180deg,var(--black-soft),transparent)}
+.badge .ic{width:52px;height:52px;margin:0 auto 12px;border:1.5px solid var(--gold);border-radius:50%;display:grid;place-items:center;font-size:1.4rem}
+.badge b{display:block;font-size:.8rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-soft)}
+
+.story{max-width:900px;margin:0 auto;padding:0 20px 70px;text-align:center}
+.story h2{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(1.6rem,3.5vw,2.3rem);margin-bottom:16px}
+.story h2 em{font-style:italic;color:var(--gold)}
+.story p{color:var(--cream-dim);max-width:64ch;margin:0 auto 14px}
+.stats{display:flex;justify-content:center;gap:38px;flex-wrap:wrap;margin-top:30px}
+.stat b{font-family:'Fraunces',serif;font-weight:900;font-size:2.2rem;color:var(--gold);display:block;line-height:1}
+.stat span{font-size:.7rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--cream-dim)}
+
+.cta-band{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:linear-gradient(90deg,rgba(168,39,31,.16),rgba(217,164,65,.12));}
+.cta-inner{max-width:900px;margin:0 auto;padding:44px 20px;text-align:center}
+.cta-inner h3{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(1.4rem,3vw,2rem);margin-bottom:20px}
+.btn{display:inline-flex;align-items:center;gap:9px;font-weight:800;border-radius:999px;padding:14px 30px;font-size:.98rem;text-decoration:none;margin:0 6px 10px}
+.btn-red{background:var(--red);color:#fff;box-shadow:0 4px 0 #6d130d}
+.btn-gold{border:1.5px solid var(--gold);color:var(--gold-bright)}
+.btn:hover{transform:translateY(-2px)}
+@media(prefers-reduced-motion:reduce){.btn:hover{transform:none}}
+
+footer{text-align:center;padding:30px 20px 40px;color:var(--cream-dim);font-size:.8rem}
+footer .branches{display:flex;justify-content:center;gap:8px 22px;flex-wrap:wrap;margin-bottom:16px;font-weight:700}
+footer .branches a{text-decoration:none;color:var(--gold-soft)}
+</style>
+</head>
+<body>
+<div class="awning"></div>
+<header>
+  <nav class="nav">
+    <a class="logo" href="/">La <em>Pizzariô</em><small>The Best Pizza In Town</small></a>
+    <div class="nav-links">
+      <a href="/#deals">Best Deals</a>
+      <a href="/#menu">Menu</a>
+      <a href="/track">Track Order</a>
+      <a class="cta" href="/#menu">Order Online →</a>
+    </div>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="chef-frame">
+    <img src="/images/about-chef.jpg" alt="The La Pizzariô master chef, arms crossed in his kitchen beside a fresh cheese-loaded pizza">
+  </div>
+  <div>
+    <div class="fleur">⚜</div>
+    <h1>Cheese loaded in <span class="gold">every bite!</span></h1>
+    <div class="rule"><span>About La Pizzariô</span></div>
+    <p class="lead">Crafted with passion. Baked to perfection.</p>
+    <p class="copy">La Pizzariô began with one simple belief — that <b>great pizza should never be a luxury</b>. From our wood-fired ovens across Bengal, we serve hot, fresh and mouth-watering pizzas at unbelievable prices, made the way pizza should be: generous with cheese, honest with ingredients, and always fresh to order.</p>
+    <p class="copy">Every base is hand-stretched, every topping is prepared daily, and every pizza leaves our kitchen only when it meets one standard — <span class="gold">would we serve this to our own family?</span></p>
+    <p class="copy">Experience the finest flavors, only at <span class="gold">La Pizzariô</span>.</p>
+  </div>
+</section>
+
+<section class="badges">
+  <div class="badge"><div class="ic">🌿</div><b>Premium Ingredients</b></div>
+  <div class="badge"><div class="ic">🔥</div><b>Perfectly Baked</b></div>
+  <div class="badge"><div class="ic">🧀</div><b>Rich &amp; Cheesy</b></div>
+  <div class="badge"><div class="ic">🛡️</div><b>Quality You Can Trust</b></div>
+</section>
+
+<section class="story">
+  <h2>From one oven to <em>seven branches</em></h2>
+  <p>What started as a single neighbourhood pizzeria has grown into a family of seven branches — Bidhannagar, Chandidas, S.B. More, Prantika, Raniganj, Asansol and Bolpur — each one baking to the same recipe and the same promise.</p>
+  <p>Order online for free home delivery, track your pizza live from oven to doorstep, and pay however you like — UPI, card, or good old cash at the door.</p>
+  <div class="stats">
+    <div class="stat"><b>7</b><span>Branches</span></div>
+    <div class="stat"><b>85+</b><span>Menu Items</span></div>
+    <div class="stat"><b>100%</b><span>Fresh to Order</span></div>
+    <div class="stat"><b>₹0</b><span>Delivery Fee</span></div>
+  </div>
+</section>
+
+<div class="cta-band">
+  <div class="cta-inner">
+    <h3>Hungry already? Your pizza is one tap away.</h3>
+    <a class="btn btn-red" href="/#menu">🍕 Order Online</a>
+    <a class="btn btn-gold" href="/track">🔎 Track My Order</a>
+  </div>
+</div>
+
+<footer>
+  <div class="branches">
+    <a href="tel:+919126996094">Bidhannagar</a><a href="tel:+919734232559">Chandidas</a><a href="tel:+919749426800">S.B. More</a><a href="tel:+917679589054">Prantika</a><a href="tel:+919800439020">Raniganj</a><a href="tel:+919907626621">Asansol</a><a href="tel:+918900791229">Bolpur</a>
+  </div>
+  © La Pizzariô™ · The Best Pizza In Town · Free Home Delivery
+</footer>
+</body>
+</html>

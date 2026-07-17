@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Pizzariô — The Best Pizza In Town</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,600&family=Karla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+:root{
+  --paper:#F8EFDC;
+  --cream:#FFFAEE;
+  --black:#123A24;
+  --ink:#241F16;
+  --ink-soft:#5C5343;
+  --basil:#1E5B38;
+  --basil-deep:#123A24;
+  --brick:#A8271F;
+  --brick-deep:#7E1712;
+  --gold:#D9A441;
+  --gold-soft:#F0D9A8;
+  --line:#E3D5B8;
+  --field:#FFFFFF;
+  --shadow:0 10px 30px rgba(36,31,22,.14);
+  --r:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto} *,*::before,*::after{animation:none!important;transition:none!important}}
+body{font-family:'Karla',sans-serif;background:var(--paper);color:var(--ink);line-height:1.5}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:4px}
+
+/* ---------- Awning stripe signature ---------- */
+.awning{height:14px;background:repeating-linear-gradient(90deg,var(--brick) 0 34px,var(--cream) 34px 68px);position:relative}
+.awning::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:6px;background:
+  radial-gradient(circle at 17px -2px, transparent 15px, rgba(36,31,22,.0) 15px),
+  linear-gradient(rgba(0,0,0,.12),transparent);}
+.awning.thin{height:8px;background:repeating-linear-gradient(90deg,var(--basil) 0 26px,var(--cream) 26px 52px)}
+
+/* ---------- Header ---------- */
+header{position:sticky;top:0;z-index:60;background:var(--basil-deep);color:var(--cream);box-shadow:0 4px 18px rgba(0,0,0,.25)}
+.nav{max-width:1280px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.logo{font-family:'Fraunces',serif;font-weight:900;font-size:1.7rem;letter-spacing:.5px}
+.logo em{font-style:normal;color:var(--gold)}
+.logo small{display:block;font-family:'Karla';font-weight:600;font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold-soft)}
+.nav-links{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+.nav-links a{font-weight:700;font-size:.82rem;text-decoration:none;padding:7px 12px;border-radius:999px;opacity:.92}
+.nav-links a:hover{background:rgba(255,255,255,.14)}
+.nav-cart-btn{display:flex;align-items:center;gap:8px;background:var(--brick);color:#fff;font-weight:800;padding:9px 16px;border-radius:999px;font-size:.88rem;box-shadow:0 3px 0 var(--brick-deep)}
+.nav-cart-btn:active{transform:translateY(2px);box-shadow:none}
+.count-pill{background:var(--gold);color:#241F16;border-radius:999px;min-width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:.75rem;padding:0 6px}
+
+/* ---------- Hero ---------- */
+.hero{background:
+  radial-gradient(1000px 500px at 85% -10%, rgba(217,164,65,.28), transparent 60%),
+  radial-gradient(700px 420px at -10% 110%, rgba(168,39,31,.35), transparent 60%),
+  var(--basil-deep);
+  color:var(--cream);overflow:hidden;position:relative}
+.hero-inner{max-width:1280px;margin:0 auto;padding:64px 20px 72px;position:relative}
+.hero .eyebrow{display:inline-flex;align-items:center;gap:10px;font-weight:800;font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(217,164,65,.5);padding:7px 14px;border-radius:999px;margin-bottom:22px}
+.hero h1{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(2.6rem,7vw,5rem);line-height:1.02}
+.hero h1 span{color:var(--gold);font-style:italic;font-weight:600}
+.hero p.lead{max-width:560px;margin:18px 0 30px;font-size:1.06rem;color:#EFE6CF}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:9px;font-weight:800;border-radius:999px;padding:13px 24px;font-size:.95rem;text-decoration:none;transition:transform .12s ease, box-shadow .12s ease}
+.btn-primary{background:var(--brick);color:#fff;box-shadow:0 4px 0 var(--brick-deep)}
+.btn-primary:hover{transform:translateY(-2px)}
+.btn-primary:active{transform:translateY(2px);box-shadow:none}
+.btn-ghost{border:2px solid rgba(255,250,238,.55);color:var(--cream)}
+.btn-ghost:hover{background:rgba(255,255,255,.1)}
+.btn-zomato{background:#E23744;color:#fff}
+.btn-swiggy{background:#FC8019;color:#fff}
+.btn-zomato:hover,.btn-swiggy:hover{transform:translateY(-2px)}
+.hero-badges{display:flex;gap:22px;flex-wrap:wrap;margin-top:36px;font-weight:700;font-size:.85rem;color:var(--gold-soft)}
+.hero-badges span{display:flex;align-items:center;gap:8px}
+.hero-inner{display:grid;grid-template-columns:1fr;gap:36px;align-items:center}
+@media(min-width:980px){.hero-inner{grid-template-columns:1.15fr .85fr}}
+.hero-chef{display:none}
+@media(min-width:980px){
+  .hero-chef{display:block;justify-self:end;position:relative}
+  .hero-chef img{display:block;width:100%;max-width:430px;border-radius:18px;border:4px solid rgba(217,164,65,.85);box-shadow:0 26px 55px rgba(0,0,0,.45)}
+}
+
+/* ---------- Ticker ---------- */
+.ticker{background:var(--gold);color:var(--ink);font-weight:800;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;overflow:hidden;white-space:nowrap;padding:9px 0;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
+.ticker-track{display:inline-block;animation:tick 30s linear infinite}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ---------- Layout ---------- */
+.wrap{max-width:1280px;margin:0 auto;padding:0 20px}
+.page-grid{display:grid;grid-template-columns:1fr;gap:32px;padding:36px 0 100px}
+@media(min-width:1024px){.page-grid{grid-template-columns:1fr 370px}}
+
+/* ---------- Sections ---------- */
+.section{margin-bottom:44px;scroll-margin-top:120px}
+.section-head{display:flex;align-items:baseline;gap:14px;margin-bottom:6px}
+.section-head h2{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(1.5rem,3vw,2.1rem)}
+.section-head .tag{font-size:.7rem;font-weight:800;letter-spacing:.2em;text-transform:uppercase;padding:4px 10px;border-radius:999px}
+.tag.veg{background:#DDEEDD;color:var(--basil)}
+.tag.nonveg{background:#F6DBD8;color:var(--brick)}
+.tag.gold{background:var(--gold-soft);color:#7a5a12}
+.section-sub{color:var(--ink-soft);font-size:.92rem;margin-bottom:18px}
+
+/* ---------- Category pills ---------- */
+.cat-nav{position:sticky;top:64px;z-index:50;background:var(--paper);padding:12px 0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line)}
+.cat-nav::-webkit-scrollbar{display:none}
+.cat-nav a{flex:none;text-decoration:none;font-weight:700;font-size:.82rem;padding:8px 15px;border-radius:999px;border:1.5px solid var(--line);background:var(--cream);color:var(--ink-soft)}
+.cat-nav a:hover{border-color:var(--gold);color:var(--ink)}
+
+/* ---------- Offer cards ---------- */
+.offers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
+.offer-card{border-radius:var(--r);padding:20px;position:relative;overflow:hidden;color:var(--cream);display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow)}
+.offer-card.red{background:linear-gradient(140deg,var(--brick),var(--brick-deep))}
+.offer-card.green{background:linear-gradient(140deg,var(--basil),var(--basil-deep))}
+.offer-card.gold{background:linear-gradient(140deg,#E7B650,#B9821E);color:var(--ink)}
+.offer-card h3{font-family:'Fraunces',serif;font-weight:900;font-size:1.25rem;line-height:1.15}
+.offer-card .big{font-family:'Fraunces',serif;font-size:2rem;font-weight:900}
+.offer-card p{font-size:.85rem;opacity:.94}
+.offer-card .fine{font-size:.72rem;opacity:.8;font-style:italic}
+.offer-actions{margin-top:auto;display:flex;gap:8px;flex-wrap:wrap;padding-top:10px}
+.chip-add{background:var(--cream);color:var(--ink);font-weight:800;font-size:.8rem;padding:8px 13px;border-radius:999px;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.chip-add:hover{transform:translateY(-1px)}
+.chip-add:active{transform:translateY(1px);box-shadow:none}
+.offer-card .ribbon{position:absolute;top:14px;right:-40px;transform:rotate(38deg);background:var(--gold);color:var(--ink);font-weight:800;font-size:.66rem;letter-spacing:.14em;padding:5px 46px;text-transform:uppercase}
+
+/* ---------- Menu items ---------- */
+.menu-grid{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:680px){.menu-grid{grid-template-columns:1fr 1fr}}
+.item{background:var(--cream);border:1px solid var(--line);border-radius:var(--r);padding:16px 16px 14px;display:flex;flex-direction:column;gap:10px;transition:box-shadow .15s ease, transform .15s ease}
+.item:hover{box-shadow:var(--shadow);transform:translateY(-2px)}
+.item-top{display:flex;gap:10px;align-items:flex-start}
+.fssai{flex:none;width:17px;height:17px;border:2px solid;border-radius:3px;display:grid;place-items:center;margin-top:3px}
+.fssai::after{content:"";width:8px;height:8px;border-radius:50%}
+.fssai.veg{border-color:var(--basil)}.fssai.veg::after{background:var(--basil)}
+.fssai.nonveg{border-color:var(--brick)}.fssai.nonveg::after{background:var(--brick);clip-path:polygon(50% 0,100% 100%,0 100%);border-radius:0;width:10px;height:9px}
+.item-name{font-weight:800;font-size:1.02rem;line-height:1.25}
+.item-desc{font-size:.8rem;color:var(--ink-soft);margin-top:2px}
+.badge-new{display:inline-block;background:var(--brick);color:#fff;font-size:.6rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:2px}
+.item-bottom{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:auto}
+.sizes{display:flex;gap:5px;flex-wrap:wrap}
+.size-btn{border:1.5px solid var(--line);background:var(--paper);border-radius:9px;padding:5px 9px;font-size:.74rem;font-weight:700;color:var(--ink-soft);line-height:1.2;text-align:center}
+.size-btn b{display:block;font-size:.83rem;color:var(--ink)}
+.size-btn.on{border-color:var(--basil);background:#E9F3EA;color:var(--basil)}
+.size-btn.on b{color:var(--basil)}
+.add-btn{margin-left:auto;background:var(--basil);color:#fff;font-weight:800;font-size:.83rem;padding:9px 18px;border-radius:999px;box-shadow:0 3px 0 var(--basil-deep)}
+.add-btn:hover{filter:brightness(1.08)}
+.add-btn:active{transform:translateY(2px);box-shadow:none}
+.add-btn.added{background:var(--gold);color:#241F16;box-shadow:0 3px 0 #9a7420}
+
+/* ---------- Photo slots (drop files into /images to fill) ---------- */
+.item-img{position:relative;height:200px;border-radius:10px;overflow:hidden;border:1.5px dashed var(--line);background:repeating-linear-gradient(45deg,#F5ECD5 0 14px,#F0E5C8 14px 28px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--ink-soft)}
+.item-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+.item-img .ph-emoji{font-size:2.1rem;opacity:.5}
+.item-img .ph-file{font-size:.6rem;font-weight:700;background:rgba(255,250,238,.85);border:1px solid var(--line);padding:2px 9px;border-radius:99px}
+.item-img.has-photo{border:1px solid var(--line)}
+.item-img.has-photo::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 68%,rgba(30,22,10,.42));pointer-events:none}
+.item:hover .item-img.has-photo img{transform:scale(1.05)}
+.offer-img{position:relative;height:160px;border-radius:10px;overflow:hidden;border:1.5px dashed rgba(255,255,255,.5);background:rgba(255,255,255,.13);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;margin-bottom:2px}
+.offer-card.gold .offer-img{border-color:rgba(36,31,22,.35);background:rgba(0,0,0,.07)}
+.offer-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+.offer-img.has-photo{border-style:solid}
+.offer-img .ph-emoji{font-size:1.9rem;opacity:.8}
+.offer-img .ph-file{font-size:.58rem;font-weight:700;background:rgba(0,0,0,.28);padding:2px 9px;border-radius:99px}
+.offer-card.gold .offer-img .ph-file{background:rgba(255,255,255,.6);color:var(--ink)}
+
+/* ---------- Cart (desktop sticky) ---------- */
+.cart-col{display:none}
+@media(min-width:1024px){
+  .cart-col{display:block}
+  .cart-panel{position:sticky;top:80px;max-height:calc(100vh - 100px);display:flex;flex-direction:column}
+}
+.cart-panel{background:var(--cream);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.cart-head{background:var(--basil-deep);color:var(--cream);padding:15px 18px;display:flex;align-items:center;gap:10px}
+.cart-head h3{font-family:'Fraunces',serif;font-weight:900;font-size:1.15rem}
+.cart-body{padding:14px 16px;overflow-y:auto;flex:1;min-height:60px}
+.cart-empty{color:var(--ink-soft);text-align:center;padding:26px 8px;font-size:.9rem}
+.cart-empty b{display:block;font-size:1.9rem;margin-bottom:6px}
+.cart-line{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line)}
+.cart-line:last-child{border-bottom:none}
+.cart-line .nm{flex:1;font-size:.84rem;font-weight:700;line-height:1.25}
+.cart-line .nm small{display:block;color:var(--ink-soft);font-weight:600;font-size:.72rem}
+.qty{display:flex;align-items:center;gap:2px;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:2px}
+.qty button{width:24px;height:24px;border-radius:50%;font-weight:900;font-size:.9rem;color:var(--basil)}
+.qty button:hover{background:#E9F3EA}
+.qty span{min-width:20px;text-align:center;font-weight:800;font-size:.83rem}
+.cart-line .pr{font-weight:800;font-size:.86rem;min-width:56px;text-align:right}
+.cart-foot{border-top:2px solid var(--line);padding:14px 16px;background:var(--paper)}
+.tot-row{display:flex;justify-content:space-between;font-size:.86rem;font-weight:600;color:var(--ink-soft);padding:2px 0}
+.tot-row.grand{font-size:1.08rem;font-weight:900;color:var(--ink);padding-top:8px}
+.tot-row.save{color:var(--basil);font-weight:800}
+.bogo-hint{background:#FBF1D8;border:1px dashed var(--gold);border-radius:9px;padding:8px 10px;font-size:.73rem;color:#7a5a12;margin-top:8px;font-weight:600}
+.checkout-btn{width:100%;margin-top:12px;background:var(--brick);color:#fff;font-weight:900;font-size:1rem;padding:14px;border-radius:12px;box-shadow:0 4px 0 var(--brick-deep)}
+.checkout-btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.checkout-btn:not(:disabled):active{transform:translateY(3px);box-shadow:none}
+
+/* ---------- Mobile cart bar + drawer ---------- */
+.mob-bar{position:fixed;left:12px;right:12px;bottom:12px;z-index:70;background:var(--basil-deep);color:var(--cream);border-radius:16px;padding:13px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);transform:translateY(140%);transition:transform .25s ease}
+.mob-bar.show{transform:translateY(0)}
+.mob-bar b{font-size:1.05rem}
+.mob-bar .view{margin-left:auto;background:var(--gold);color:#241F16;font-weight:900;padding:9px 18px;border-radius:999px;font-size:.88rem}
+@media(min-width:1024px){.mob-bar{display:none}}
+.drawer-scrim{position:fixed;inset:0;background:rgba(20,16,10,.55);z-index:80;opacity:0;pointer-events:none;transition:opacity .2s}
+.drawer-scrim.show{opacity:1;pointer-events:auto}
+.drawer{position:fixed;left:0;right:0;bottom:0;z-index:90;max-height:86vh;background:var(--cream);border-radius:22px 22px 0 0;transform:translateY(105%);transition:transform .28s cubic-bezier(.2,.8,.25,1);display:flex;flex-direction:column;box-shadow:0 -12px 40px rgba(0,0,0,.35)}
+.drawer.show{transform:translateY(0)}
+.drawer .grab{width:44px;height:5px;border-radius:99px;background:var(--line);margin:10px auto 0}
+@media(min-width:1024px){.drawer,.drawer-scrim{display:none}}
+
+/* ---------- Modal (checkout) ---------- */
+.modal-scrim{position:fixed;inset:0;background:rgba(20,16,10,.6);z-index:100;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-scrim.show{display:flex}
+.modal{background:var(--cream);border-radius:18px;max-width:520px;width:100%;max-height:92vh;overflow-y:auto;box-shadow:0 24px 70px rgba(0,0,0,.45)}
+.modal-head{background:var(--basil-deep);color:var(--cream);padding:16px 20px;display:flex;align-items:center;position:sticky;top:0;z-index:2}
+.modal-head h3{font-family:'Fraunces',serif;font-weight:900;font-size:1.2rem}
+.modal-close{margin-left:auto;color:var(--cream);font-size:1.5rem;line-height:1;padding:2px 8px;border-radius:8px}
+.modal-close:hover{background:rgba(255,255,255,.15)}
+.modal-body{padding:20px}
+.field{margin-bottom:14px}
+.field label{display:block;font-weight:800;font-size:.8rem;margin-bottom:5px;letter-spacing:.02em}
+.field input,.field select,.field textarea{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:11px 13px;font-family:inherit;font-size:.92rem;background:var(--field);color:var(--ink)}
+.field input::placeholder,.field textarea::placeholder{color:#A99C82}
+.field select option{background:var(--field);color:var(--ink)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--basil);box-shadow:0 0 0 3px rgba(30,91,56,.15)}
+.field .err{color:var(--brick);font-size:.74rem;font-weight:700;margin-top:4px;display:none}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;border:1.5px solid var(--line);border-radius:10px;padding:11px;font-weight:800;font-size:.88rem;background:var(--field);color:var(--ink-soft)}
+.seg button.on{border-color:var(--basil);background:#E9F3EA;color:var(--basil)}
+.summary-box{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:.83rem;margin-bottom:14px}
+.summary-box .tot-row.grand{font-size:1rem}
+.pay-wrap{text-align:center}
+.pay-name{font-weight:800;font-size:.95rem}
+.pay-upi-id{font-weight:700;color:var(--ink-soft);font-size:.85rem;letter-spacing:.03em}
+#qrbox{display:inline-block;background:#fff;padding:14px;border-radius:14px;border:2px solid var(--line);margin:14px 0 6px}
+#qrbox img,#qrbox canvas{display:block}
+.pay-amt{font-family:'Fraunces',serif;font-weight:900;font-size:2rem;color:var(--basil)}
+.pay-note{font-size:.78rem;color:var(--ink-soft);margin:8px 0 14px}
+.upi-apps{display:flex;justify-content:center;gap:10px;font-size:.72rem;font-weight:700;color:var(--ink-soft);margin-bottom:14px}
+.btn-block{display:flex;width:100%;justify-content:center;margin-bottom:10px}
+.btn-upi{background:var(--basil);color:#fff;box-shadow:0 4px 0 var(--basil-deep)}
+.btn-wa{background:#1FA855;color:#fff;box-shadow:0 4px 0 #14713a}
+.step-dots{display:flex;justify-content:center;gap:7px;padding:14px 0 4px}
+.step-dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.step-dots i.on{background:var(--basil)}
+.success-check{font-size:3.4rem}
+
+/* ---------- Footer ---------- */
+footer{background:var(--basil-deep);color:var(--cream);margin-top:20px}
+.foot-grid{max-width:1280px;margin:0 auto;padding:48px 20px 30px;display:grid;gap:32px;grid-template-columns:1fr}
+@media(min-width:800px){.foot-grid{grid-template-columns:1.2fr 1fr 1fr}}
+.foot-grid h4{font-family:'Fraunces',serif;font-weight:900;font-size:1.15rem;margin-bottom:12px;color:var(--gold)}
+.branch{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.15);font-size:.88rem}
+.branch a{color:var(--gold-soft);text-decoration:none;font-weight:700}
+.foot-note{text-align:center;padding:16px;font-size:.75rem;color:rgba(255,250,238,.55);border-top:1px solid rgba(255,255,255,.12)}
+.qr-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--basil);margin-right:6px;animation:qrpulse 1.3s ease infinite;vertical-align:1px}
+@keyframes qrpulse{0%,100%{opacity:1}50%{opacity:.35}}
+.choice-list{display:grid;gap:9px;margin-top:6px}
+.choice-btn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1.5px solid var(--line);background:var(--field);border-radius:12px;padding:13px 15px;font-weight:800;font-size:.95rem;color:var(--ink);cursor:pointer}
+.choice-btn:hover{border-color:var(--gold);background:rgba(217,164,65,.1)}
+.choice-btn .go{margin-left:auto;color:var(--gold);font-weight:900}
+.choice-sub{color:var(--ink-soft);font-size:.84rem;margin-bottom:12px}
+.track-pill{position:fixed;left:12px;bottom:12px;z-index:69;display:none;align-items:center;gap:10px;background:var(--gold);color:#241F16;font-weight:800;font-size:.85rem;padding:11px 16px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.3);text-decoration:none}
+.track-pill.show{display:inline-flex}
+.track-pill .tp-x{font-weight:900;padding:0 4px;border-radius:6px;color:#241F16;opacity:.6}
+.track-pill .tp-x:hover{opacity:1}
+@media(max-width:1023px){.track-pill{bottom:84px}}
+.toast{position:fixed;bottom:90px;left:50%;transform:translate(-50%,20px);background:var(--ink);color:var(--cream);font-weight:700;font-size:.85rem;padding:11px 20px;border-radius:999px;z-index:120;opacity:0;pointer-events:none;transition:all .25s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="awning" aria-hidden="true"></div>
+  <nav class="nav">
+    <div class="logo">La <em>Pizzariô</em><small>The Best Pizza In Town</small></div>
+    <div class="nav-links">
+      <a href="#deals">Best Deals</a>
+      <a href="#menu">Menu</a>
+      <a href="#branches">Branches</a>
+      <a href="/about">About</a>
+      <a href="/track">🔎 Track Order</a>
+    </div>
+    <button class="nav-cart-btn" onclick="openCartUI()">🛒 Cart <span class="count-pill" id="navCount">0</span></button>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+    <span class="eyebrow">🔥 Newly Launched — Hawaiian Pizza</span>
+    <h1>Hot, fresh &amp; mouth-watering pizza<br><span>at unbelievable prices.</span></h1>
+    <p class="lead">Cheese loaded in every bite. Order online for <strong>free home delivery</strong>, pay instantly by UPI, or find us on Zomato &amp; Swiggy.</p>
+    <div class="hero-ctas">
+      <a class="btn btn-primary" href="#menu">Order Online →</a>
+      <a class="btn btn-zomato" href="https://www.zomato.com/search?q=La%20Pizzario" target="_blank" rel="noopener">Order on Zomato</a>
+      <a class="btn btn-swiggy" href="https://www.swiggy.com/search?query=La%20Pizzario" target="_blank" rel="noopener">Order on Swiggy</a>
+    </div>
+    <div class="hero-badges">
+      <span>🛵 Free Home Delivery</span>
+      <span>📱 UPI Payments</span>
+      <span>📍 7 Branches</span>
+    </div>
+    </div>
+    <div class="hero-chef">
+      <img src="/images/about-chef.jpg" alt="The La Pizzariô master chef with a fresh cheese-loaded pizza">
+    </div>
+  </div>
+</section>
+
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track" id="ticker"></div>
+</div>
+
+<div class="wrap">
+  <nav class="cat-nav" id="catNav" aria-label="Menu categories"></nav>
+
+  <div class="page-grid">
+    <main>
+      <!-- BEST DEALS -->
+      <section class="section" id="deals">
+        <div class="section-head"><h2>Best Deals</h2><span class="tag gold">Offers</span></div>
+        <p class="section-sub">Pizza combos come with your choice of pizza — you'll pick it when you add the deal. *Terms &amp; conditions apply.</p>
+        <div class="offers-grid">
+          <div class="offer-card red">
+            <span class="ribbon">Mon &amp; Fri</span>
+            <div class="offer-img"><span class="ph-emoji">🍕</span><span class="ph-file">images/offer-buy-one-get-one.jpg</span><img src="images/offer-buy-one-get-one.jpg" alt="" loading="lazy" onerror="this.remove()" onload="this.parentElement.classList.add('has-photo')"></div>
+            <h3>Buy One, Get One <span style="color:var(--gold)">FREE</span></h3>
+            <p class="big">1 + 1</p>
+            <p>Buy one <strong>large pizza</strong> &amp; get a <strong>small pizza free</strong>. Applied automatically in your cart on eligible orders.</p>
+            <p class="fine">*Only on Monday &amp; Friday · Not valid for home delivery (pickup only)</p>
+          </div>
+          <div class="offer-card green">
+            <div class="offer-img"><span class="ph-emoji">🍟</span><span class="ph-file">images/offer-executive-meal.jpg</span><img src="images/offer-executive-meal.jpg" alt="" loading="lazy" onerror="this.remove()" onload="this.parentElement.classList.add('has-photo')"></div>
+            <h3>Executive Meal</h3>
+            <p>One small pizza + French fries + 250 ml cold drink</p>
+            <div class="offer-actions">
+              <button class="chip-add" onclick="addCombo('Executive Meal (Veg)',290,true,'pizza')">Veg · ₹290 +</button>
+              <button class="chip-add" onclick="addCombo('Executive Meal (Non-Veg)',310,false,'pizza')">Non-Veg · ₹310 +</button>
+            </div>
+          </div>
+          <div class="offer-card gold">
+            <div class="offer-img"><span class="ph-emoji">🍔</span><span class="ph-file">images/offer-combo-meal-burger.jpg</span><img src="images/offer-combo-meal-burger.jpg" alt="" loading="lazy" onerror="this.remove()" onload="this.parentElement.classList.add('has-photo')"></div>
+            <h3>Combo Meal Burger</h3>
+            <p>Burger + French fry + 250 ml cold drink</p>
+            <div class="offer-actions">
+              <button class="chip-add" onclick="addCombo('Combo Meal Burger (Veg)',140,true,'burger')">Veg · ₹140 +</button>
+              <button class="chip-add" onclick="addCombo('Combo Meal Burger (Non-Veg)',160,false,'burger')">Non-Veg · ₹160 +</button>
+            </div>
+          </div>
+          <div class="offer-card gold">
+            <div class="offer-img"><span class="ph-emoji">🍫</span><span class="ph-file">images/offer-burger-dessert-combo.jpg</span><img src="images/offer-burger-dessert-combo.jpg" alt="" loading="lazy" onerror="this.remove()" onload="this.parentElement.classList.add('has-photo')"></div>
+            <h3>Burger + Dessert Combo</h3>
+            <p>Burger + Choco lava cake / Brownie + 250 ml cold drink</p>
+            <div class="offer-actions">
+              <button class="chip-add" onclick="addCombo('Burger + Dessert Combo (Veg)',140,true,'burgerdessert')">Veg · ₹140 +</button>
+              <button class="chip-add" onclick="addCombo('Burger + Dessert Combo (Non-Veg)',160,false,'burgerdessert')">Non-Veg · ₹160 +</button>
+            </div>
+          </div>
+          <div class="offer-card green">
+            <div class="offer-img"><span class="ph-emoji">🥤</span><span class="ph-file">images/offer-meal-for-two.jpg</span><img src="images/offer-meal-for-two.jpg" alt="" loading="lazy" onerror="this.remove()" onload="this.parentElement.classList.add('has-photo')"></div>
+            <h3>Meal for Two</h3>
+            <p>One medium pizza + 4 pcs cheese garlic bread + 500 ml cold drinks</p>
+            <div class="offer-actions">
+              <button class="chip-add" onclick="addCombo('Meal for Two (Veg)',450,true,'pizza')">Veg · ₹450 +</button>
+              <button class="chip-add" onclick="addCombo('Meal for Two (Non-Veg)',480,false,'pizza')">Non-Veg · ₹480 +</button>
+            </div>
+          </div>
+          <div class="offer-card red">
+            <div class="offer-img"><span class="ph-emoji">🎉</span><span class="ph-file">images/offer-meal-for-four.jpg</span><img src="images/offer-meal-for-four.jpg" alt="" loading="lazy" onerror="this.remove()" onload="this.parentElement.classList.add('has-photo')"></div>
+            <h3>Meal for Four</h3>
+            <p>One large pizza + 4 pcs cheese garlic bread + 500 ml cold drinks</p>
+            <div class="offer-actions">
+              <button class="chip-add" onclick="addCombo('Meal for Four (Veg)',650,true,'pizza')">Veg · ₹650 +</button>
+              <button class="chip-add" onclick="addCombo('Meal for Four (Non-Veg)',660,false,'pizza')">Non-Veg · ₹660 +</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div id="menu"></div>
+      <!-- Menu sections injected here -->
+      <div id="menuRoot"></div>
+    </main>
+
+    <!-- Desktop sticky cart -->
+    <aside class="cart-col">
+      <div class="cart-panel" id="deskCart"></div>
+    </aside>
+  </div>
+</div>
+
+<!-- Mobile cart bar -->
+<div class="mob-bar" id="mobBar">
+  <span id="mobBarInfo"><b>0 items</b> · ₹0</span>
+  <button class="view" onclick="openDrawer()">View Cart</button>
+</div>
+
+<!-- Mobile drawer -->
+<div class="drawer-scrim" id="drawerScrim" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer" role="dialog" aria-label="Your cart">
+  <div class="grab"></div>
+  <div class="cart-panel" id="mobCart" style="border:none;box-shadow:none;display:flex;flex-direction:column;overflow:hidden;max-height:80vh"></div>
+</div>
+
+<!-- Checkout modal -->
+<div class="modal-scrim" id="modalScrim">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Checkout">
+    <div class="modal-head"><h3 id="modalTitle">Checkout</h3><button class="modal-close" onclick="closeModal()" aria-label="Close">×</button></div>
+    <div class="step-dots"><i id="dot1" class="on"></i><i id="dot2"></i><i id="dot3"></i></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<footer id="branches">
+  <div class="awning thin" aria-hidden="true"></div>
+  <div class="foot-grid">
+    <div>
+      <h4>La Pizzariô</h4>
+      <p style="font-size:.9rem;max-width:340px;color:rgba(255,250,238,.85)">The best pizza in town — cheese loaded in every bite. Hot, fresh &amp; mouth-watering pizza at unbelievable prices, with free home delivery.</p>
+      <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+        <a class="btn btn-zomato" style="padding:9px 16px;font-size:.8rem" href="https://www.zomato.com/search?q=La%20Pizzario" target="_blank" rel="noopener">Zomato</a>
+        <a class="btn btn-swiggy" style="padding:9px 16px;font-size:.8rem" href="https://www.swiggy.com/search?query=La%20Pizzario" target="_blank" rel="noopener">Swiggy</a>
+      </div>
+    </div>
+    <div>
+      <h4>Our Branches</h4>
+      <div class="branch"><span>Bidhannagar</span><a href="tel:+919126996094">91269 96094</a></div>
+      <div class="branch"><span>Chandidas</span><a href="tel:+919734232559">97342 32559</a></div>
+      <div class="branch"><span>S.B. More</span><a href="tel:+919749426800">97494 26800</a></div>
+      <div class="branch"><span>Prantika</span><a href="tel:+917679589054">76795 89054</a></div>
+      <div class="branch"><span>Raniganj</span><a href="tel:+919800439020">98004 39020</a></div>
+      <div class="branch"><span>Asansol</span><a href="tel:+919907626621">99076 26621</a></div>
+      <div class="branch"><span>Bolpur</span><a href="tel:+918900791229">89007 91229</a></div>
+    </div>
+    <div>
+      <h4>Ordering &amp; Payment</h4>
+      <p style="font-size:.88rem;color:rgba(255,250,238,.85);margin-bottom:10px">🛵 Free home delivery on all online orders.</p>
+      <p style="font-size:.88rem;color:rgba(255,250,238,.85);margin-bottom:10px">📱 Pay securely with any UPI app — Paytm, PhonePe, Google Pay or BHIM.</p>
+      <p style="font-size:.88rem;color:rgba(255,250,238,.85)">🎉 Buy one large pizza, get a small pizza free — Monday &amp; Friday, pickup only.</p>
+    </div>
+  </div>
+  <div class="foot-note">© La Pizzariô · *Terms &amp; conditions apply · Prices in ₹ (INR)</div>
+</footer>
+
+<div class="modal-scrim" id="chooseScrim">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Choose your pizza" style="max-width:420px">
+    <div class="modal-head"><h3>🍕 Choose your pizza</h3><button class="modal-close" onclick="closeChoice()" aria-label="Close">×</button></div>
+    <div class="modal-body" id="chooseBody"></div>
+  </div>
+</div>
+
+<a class="track-pill" id="trackPill" href="/track">
+  🔎 <span id="trackPillTxt">Track your order</span>
+  <button class="tp-x" onclick="hideTrackPill(event)" aria-label="Dismiss">×</button>
+</a>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   MENU DATA — transcribed in full from the La Pizzariô cards
+   ========================================================= */
+const MENU = [
+{id:'veg-pizzas', title:'Vegetable Pizzas', tag:'veg', sub:'Small · Medium · Large', items:[
+ {n:'Hawain Pizza', d:'Mozzarella cheese, pineapple, onion, green pepper, jalapenos, golden corn, oregano', v:true, isNew:true, p:{'Small':240,'Medium':360,'Large':570}, pz:true},
+ {n:'Pizzario Garden Fresh', d:'Golden corn, cheese, onion, tomato, oregano', v:true, p:{'Small':170,'Medium':280,'Large':430}, pz:true},
+ {n:'Veggie Deluxe', d:'Onion, capsicum, mushroom, cheese, fresh tomato, olives, jalapenos', v:true, p:{'Small':230,'Medium':340,'Large':470}, pz:true},
+ {n:'Cheesy Mushroom Pizza', d:'Fresh mushroom, mozzarella, cheese, oregano', v:true, p:{'Small':150,'Medium':260,'Large':400}, pz:true},
+ {n:'Cheesy Tomato Pizza', d:'Fresh tomato, mozzarella, cheese, oregano', v:true, p:{'Small':130,'Medium':250,'Large':380}, pz:true},
+ {n:'Classic Veg. Pizza', d:'Mozzarella cheese, green pepper, onion, fresh tomato, oregano', v:true, p:{'Small':160,'Medium':280,'Large':410}, pz:true},
+ {n:'Margherita Pizza', d:'Pizza sauce, plain cheese, oregano', v:true, p:{'Small':100,'Medium':200,'Large':320}, pz:true},
+ {n:'Green Pepper Pizza', d:'Mozzarella cheese, green pepper, oregano', v:true, p:{'Small':130,'Medium':240,'Large':350}, pz:true},
+ {n:'Onion Pizza', d:'Fresh onion, mozzarella cheese, oregano', v:true, p:{'Small':120,'Medium':230,'Large':360}, pz:true},
+ {n:'Golden Corn and Cheese Pizza', d:'Mozzarella cheese, golden corn, oregano', v:true, p:{'Small':140,'Medium':260,'Large':370}, pz:true},
+ {n:'Veggie Exotica Pizza', d:'Sweet corn, olive, mushroom, onion, cheese, capsicum, fresh tomato, jalapenos', v:true, p:{'Small':240,'Medium':360,'Large':510}, pz:true},
+ {n:'Paneer Tikka Pizza', d:'Cottage cheese, onion, capsicum, fresh tomato, jalapenos', v:true, p:{'Small':250,'Medium':380,'Large':520}, pz:true},
+ {n:'Corny Paneer Pizza', d:'Cottage cheese, sweet corn, chilly, oregano, capsicum', v:true, p:{'Small':230,'Medium':370,'Large':510}, pz:true},
+ {n:'Cheesy Paneer Pizza', d:'Fresh paneer, cheese, jalapenos, oregano', v:true, p:{'Small':230,'Medium':370,'Large':510}, pz:true},
+ {n:'Paneer Deluxe', d:'Fresh paneer, cheese, golden corn, mushroom, jalapenos, oregano, onion, capsicum', v:true, p:{'Small':260,'Medium':390,'Large':530}, pz:true},
+ {n:'Kids Delite Pizza', d:'Golden corn, onion, capsicum, olives, tomato, cheese', v:true, p:{'Small':190,'Medium':290,'Large':410}, pz:true},
+]},
+{id:'nonveg-pizzas', title:'Non-Veg Pizzas', tag:'nonveg', sub:'Small · Medium · Large', items:[
+ {n:'Chicken Hawain Pizza', d:'Mozzarella cheese, pineapple, grilled chicken, onion, green pepper, jalapenos, golden corn, oregano', v:false, isNew:true, p:{'Small':260,'Medium':370,'Large':550}, pz:true},
+ {n:'Chicken Olicano Pizza', d:'Black olives, mozzarella cheese, onion, oregano & grilled chicken', v:false, p:{'Small':220,'Medium':360,'Large':510}, pz:true},
+ {n:'Tandoori Chicken Pizza', d:'Mozzarella cheese, grilled chicken, onion, green pepper, oregano, tomato', v:false, p:{'Small':230,'Medium':360,'Large':510}, pz:true},
+ {n:'Hot & Spicy Chicken Pizza', d:'Cheese, green pepper, jalapenos, oregano, grilled chicken & onion, chilli, tomato', v:false, p:{'Small':230,'Medium':360,'Large':510}, pz:true},
+ {n:'Golden Corn and Chicken Pizza', d:'Mozzarella cheese, golden corn, oregano, grilled chicken', v:false, p:{'Small':200,'Medium':310,'Large':430}, pz:true},
+ {n:'Chicken Green Pepper Pizza', d:'Mozzarella cheese, green pepper, grilled chicken & oregano', v:false, p:{'Small':180,'Medium':290,'Large':420}, pz:true},
+ {n:'Pizzario Special Pizza', d:"Grilled chicken, cheese, salami, kebab, corn, oregano, jalapenos, onion, fresh tomato", v:false, p:{'Small':290,'Medium':430,'Large':620}, pz:true},
+ {n:'Chicken & Onion Pizza', d:'Mozzarella cheese, grilled chicken, onion, oregano', v:false, p:{'Small':190,'Medium':290,'Large':430}, pz:true},
+ {n:'Cheesy Chicken Pizza', d:'Mozzarella cheese, grilled chicken, chilli flakes, oregano', v:false, p:{'Small':180,'Medium':290,'Large':410}, pz:true},
+ {n:'Chicken Deluxe Pizza', d:'Grilled chicken, sweetcorn, onion, tomato, green pepper, mushroom, cheese, oregano', v:false, p:{'Small':260,'Medium':370,'Large':530}, pz:true},
+ {n:'Sizzling Spicy Kebab Pizza', d:'Kebab, onion, green pepper, tomato, cheese, oregano & chilli', v:false, p:{'Small':260,'Medium':370,'Large':530}, pz:true},
+ {n:'Chicken Supremo Pizza', d:'Mozzarella cheese, grilled chicken, onion, green pepper, tomato, oregano, chicken salami', v:false, p:{'Small':260,'Medium':370,'Large':530}, pz:true},
+ {n:'Chicken Salami Lover Pizza', d:'Salami, cheese, oregano, green pepper, tomato', v:false, p:{'Small':230,'Medium':360,'Large':510}, pz:true},
+]},
+{id:'stuffed-veg', title:'Cheese Stuffed Crust — Veg', tag:'veg', sub:'Medium · Large', items:[
+ {n:'Classic Veg. Cheese St. Crust', v:true, p:{'Medium':420,'Large':560}},
+ {n:'Veggie Exotica St. Crust Pizza', v:true, p:{'Medium':430,'Large':580}},
+ {n:'Golden Corn & Cheese St. Crust', v:true, p:{'Medium':370,'Large':560}},
+ {n:'Paneer Deluxe St. Crust', v:true, p:{'Medium':450,'Large':600}},
+ {n:'Paneer Tikka St. Crust', v:true, p:{'Medium':430,'Large':580}},
+ {n:'Margherita St. Crust', v:true, p:{'Medium':360,'Large':500}},
+ {n:'Corny Paneer St. Crust', v:true, p:{'Medium':430,'Large':580}},
+ {n:'Veg. Hawaiian St. Crust', v:true, isNew:true, p:{'Medium':430,'Large':580}},
+]},
+{id:'stuffed-nonveg', title:'Cheesy Stuffed Crust — Non-Veg', tag:'nonveg', sub:'Medium · Large', items:[
+ {n:'Tandoori Chicken Cheese St. Crust', v:false, p:{'Medium':430,'Large':600}},
+ {n:'Hot & Spicy Cheese St. Crust', v:false, p:{'Medium':430,'Large':600}},
+ {n:'Supremo Cheese St. Crust', v:false, p:{'Medium':450,'Large':630}},
+ {n:'Chicken Deluxe St. Crust Pizza', v:false, p:{'Medium':450,'Large':630}},
+ {n:'Chicken Hawaiian St. Crust Pizza', v:false, isNew:true, p:{'Medium':450,'Large':630}},
+ {n:'Golden Corn & Chicken St. Crust', v:false, p:{'Medium':380,'Large':580}},
+ {n:'Pizzario Special St. Crust Pizza', v:false, p:{'Medium':490,'Large':690}},
+]},
+{id:'veg-starters', title:'Veg Starters', tag:'veg', items:[
+ {n:'Garlic Bread with Cheese', v:true, p:{'':130}},
+ {n:'Pizza Pocket Veg.', v:true, p:{'':140}},
+ {n:'French Fry', v:true, p:{'':70}},
+ {n:'Pizza Pie Sandwich', v:true, p:{'':140}},
+]},
+{id:'nonveg-starters', title:'Non-Veg Starters', tag:'nonveg', items:[
+ {n:'Garlic Bread Supreme', v:false, p:{'':140}},
+ {n:'Fried Chicken Wings', v:false, p:{'2 pcs':110,'4 pcs':220}},
+ {n:'Chicken Sheekh Kebab', v:false, p:{'':180}},
+ {n:'Chicken Nuggets', v:false, p:{'':100}},
+ {n:'Chicken Popcorn', v:false, p:{'':100}},
+ {n:'Pizza Pocket Chicken', v:false, p:{'':170}},
+ {n:'Pizza Pie Sandwich Chicken', v:false, p:{'':170}},
+]},
+{id:'burgers', title:'Burgers', tag:'gold', items:[
+ {n:'Veg. Burger', v:true, p:{'':70}},
+ {n:'Paneer Burger', v:true, p:{'':90}},
+ {n:'Chicken Burger', v:false, p:{'':90}},
+]},
+{id:'desserts', title:'Desserts', tag:'gold', items:[
+ {n:'Chocolava Cake', v:true, p:{'':60}},
+ {n:'Brownie', v:true, p:{'':60}},
+]},
+{id:'beverages', title:'Beverages', tag:'gold', items:[
+ {n:'Water', v:true, p:{'500 ml':10,'1 L':20}},
+ {n:'Cold Drink', v:true, p:{'250 ml':20,'200 ml':35,'1 L':55}},
+]},
+{id:'toppings', title:'Extra Toppings', tag:'gold', sub:'Priced per topping — pick the size that matches your pizza (Small · Medium · Large)', items:[
+ {n:'Onion (Extra Topping)', v:true, p:{'Small':20,'Medium':30,'Large':40}},
+ {n:'Capsicum (Extra Topping)', v:true, p:{'Small':20,'Medium':30,'Large':40}},
+ {n:'Tomato (Extra Topping)', v:true, p:{'Small':20,'Medium':30,'Large':40}},
+ {n:'Oregano (Extra Topping)', v:true, p:{'Small':10,'Medium':20,'Large':30}},
+ {n:'Chicken (Extra Topping)', v:false, p:{'Small':50,'Medium':70,'Large':110}},
+ {n:'Salami (Extra Topping)', v:false, p:{'Small':60,'Medium':80,'Large':120}},
+ {n:'Cheese (Extra Topping)', v:true, p:{'Small':60,'Medium':80,'Large':110}},
+ {n:'Paneer (Extra Topping)', v:true, p:{'Small':60,'Medium':80,'Large':110}},
+ {n:'Mushroom (Extra Topping)', v:true, p:{'Small':30,'Medium':40,'Large':60}},
+ {n:'Olives (Extra Topping)', v:true, p:{'Small':30,'Medium':40,'Large':60}},
+ {n:'Jalapenos (Extra Topping)', v:true, p:{'Small':30,'Medium':40,'Large':50}},
+ {n:'Sweet Corn (Extra Topping)', v:true, p:{'Small':30,'Medium':40,'Large':60}},
+ {n:'Kebab (Extra Topping)', v:false, p:{'Small':80,'Medium':120,'Large':150}},
+ {n:'Pineapple (Extra Topping)', v:true, p:{'Small':30,'Medium':40,'Large':60}},
+]},
+];
+
+const BRANCHES = {
+ 'Bidhannagar':'9126996094','Chandidas':'9734232559','S.B. More':'9749426800',
+ 'Prantika':'7679589054','Raniganj':'9800439020','Asansol':'9907626621','Bolpur':'8900791229'
+};
+const UPI_ID = '9732011051@ptsbi';
+const UPI_NAME = 'Karunasindhu Chakrovarty';
+
+/* ---------- State ---------- */
+let cart = [];           // {key,name,variant,price,qty,veg,pz}
+let selected = {};       // itemKey -> chosen variant
+let order = {type:'Delivery', branch:'Bidhannagar', name:'', phone:'', address:'', notes:'', email:'', oid:''};
+function newOrderId(){
+  const d = new Date();
+  const ds = String(d.getFullYear()).slice(2) + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+  return 'LP-' + ds + '-' + Math.floor(1000 + Math.random()*9000);
+}
+let step = 1;
+const INR = n => '₹' + n.toLocaleString('en-IN');
+const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+const SEC_EMOJI = {'veg-pizzas':'🍕','nonveg-pizzas':'🍕','stuffed-veg':'🧀','stuffed-nonveg':'🧀','veg-starters':'🥖','nonveg-starters':'🍗','burgers':'🍔','desserts':'🍫','beverages':'🥤','toppings':'🌶️'};
+
+/* ---------- Render menu ---------- */
+function renderMenu(){
+  const root = document.getElementById('menuRoot');
+  const nav = document.getElementById('catNav');
+  nav.innerHTML = `<a href="#deals">🎉 Best Deals</a>` + MENU.map(s=>`<a href="#${s.id}">${s.title}</a>`).join('');
+  root.innerHTML = MENU.map((sec,si)=>`
+    <section class="section" id="${sec.id}">
+      <div class="section-head"><h2>${sec.title}</h2><span class="tag ${sec.tag}">${sec.tag==='veg'?'Pure Veg':sec.tag==='nonveg'?'Non-Veg':'Add-ons & More'}</span></div>
+      ${sec.sub?`<p class="section-sub">${sec.sub}</p>`:''}
+      <div class="menu-grid">
+      ${sec.items.map((it,ii)=>{
+        const key = si+'-'+ii;
+        const variants = Object.keys(it.p);
+        if(!(key in selected)) selected[key] = variants[0];
+        return `
+        <article class="item">
+          <div class="item-img"><span class="ph-emoji">${SEC_EMOJI[sec.id]||'🍕'}</span><span class="ph-file">images/${slug(it.n)}.jpg</span><img src="images/${slug(it.n)}.jpg" alt="${it.n}" loading="lazy" onerror="this.remove()" onload="this.parentElement.classList.add('has-photo')"></div>
+          <div class="item-top">
+            <span class="fssai ${it.v?'veg':'nonveg'}" title="${it.v?'Veg':'Non-Veg'}" aria-label="${it.v?'Vegetarian':'Non-vegetarian'}"></span>
+            <div>
+              <div class="item-name">${it.n}${it.isNew?'<span class="badge-new">New</span>':''}</div>
+              ${it.d?`<div class="item-desc">${it.d}</div>`:''}
+            </div>
+          </div>
+          <div class="item-bottom">
+            <div class="sizes" id="sz-${key}">
+              ${variants.map(v=>`<button class="size-btn ${selected[key]===v?'on':''}" onclick="pickSize('${key}','${v.replace(/'/g,"\\'")}')">${v||'Regular'}<b>${INR(it.p[v])}</b></button>`).join('')}
+            </div>
+            <button class="add-btn" id="add-${key}" onclick="addItem('${key}')">Add +</button>
+          </div>
+        </article>`;
+      }).join('')}
+      </div>
+    </section>`).join('');
+}
+function findItem(key){
+  const [si,ii] = key.split('-').map(Number);
+  return MENU[si].items[ii];
+}
+function pickSize(key,v){
+  selected[key]=v;
+  const it = findItem(key);
+  const box = document.getElementById('sz-'+key);
+  [...box.children].forEach(b=>{
+    b.classList.toggle('on', b.textContent.startsWith(v||'Regular') && b.querySelector('b').textContent===INR(it.p[v]));
+  });
+  // simpler reliable re-render of just this size group:
+  box.innerHTML = Object.keys(it.p).map(vv=>`<button class="size-btn ${selected[key]===vv?'on':''}" onclick="pickSize('${key}','${vv.replace(/'/g,"\\'")}')">${vv||'Regular'}<b>${INR(it.p[vv])}</b></button>`).join('');
+}
+function addItem(key){
+  const it = findItem(key);
+  const v = selected[key];
+  pushToCart(it.n, v, it.p[v], it.v, !!it.pz);
+  const btn = document.getElementById('add-'+key);
+  if(btn){btn.classList.add('added');btn.textContent='Added ✓';setTimeout(()=>{btn.classList.remove('added');btn.textContent='Add +';},900);}
+}
+/* Combo choices — edit these lists to change what customers can pick */
+const COMBO_CHOICES = {
+  pizza: {
+    title: 'Choose your pizza',
+    veg:    ['Hawain Pizza','Pizzario Garden Fresh','Veggie Deluxe','Cheesy Mushroom Pizza','Cheesy Tomato Pizza','Classic Veg. Pizza','Margherita Pizza','Green Pepper Pizza','Onion Pizza','Golden Corn and Cheese Pizza','Veggie Exotica Pizza','Paneer Tikka Pizza','Corny Paneer Pizza','Cheesy Paneer Pizza','Paneer Deluxe','Kids Delite Pizza'],
+    nonveg: ['Chicken Hawain Pizza','Chicken Olicano Pizza','Tandoori Chicken Pizza','Hot & Spicy Chicken Pizza','Golden Corn and Chicken Pizza','Chicken Green Pepper Pizza','Pizzario Special Pizza','Chicken & Onion Pizza','Cheesy Chicken Pizza','Chicken Deluxe Pizza','Sizzling Spicy Kebab Pizza','Chicken Supremo Pizza','Chicken Salami Lover Pizza']
+  },
+  burger: {
+    title: 'Choose your burger',
+    veg:    ['Veg. Burger','Paneer Burger'],
+    nonveg: ['Chicken Burger']
+  },
+  burgerdessert: {
+    title: 'Choose your burger & dessert',
+    veg:    ['Veg. Burger + Choco Lava Cake','Veg. Burger + Brownie','Paneer Burger + Choco Lava Cake','Paneer Burger + Brownie'],
+    nonveg: ['Chicken Burger + Choco Lava Cake','Chicken Burger + Brownie']
+  }
+};
+let pendingCombo = null;
+function addCombo(name,price,veg,kind){
+  if(kind && COMBO_CHOICES[kind]){ openChoice(name,price,veg,kind); return; }
+  pushToCart(name,'',price,veg,false);
+  toast(name+' added to cart');
+}
+function openChoice(name,price,veg,kind){
+  pendingCombo = {name,price,veg};
+  const cfg = COMBO_CHOICES[kind];
+  const list = veg ? cfg.veg : cfg.nonveg;
+  document.querySelector('#chooseScrim .modal-head h3').textContent = '🍽️ ' + cfg.title;
+  document.getElementById('chooseBody').innerHTML = `
+    <div class="choice-sub">For your <b>${name}</b> (${INR(price)}):</div>
+    <div class="choice-list">
+      ${list.map(p=>`<button class="choice-btn" onclick="pickComboOpt('${p.replace(/'/g,"\\'")}')"><span class="fssai ${veg?'veg':'nonveg'}" style="margin:0"></span> ${p} <span class="go">Add →</span></button>`).join('')}
+    </div>`;
+  document.getElementById('chooseScrim').classList.add('show');
+}
+function pickComboOpt(p){
+  const c = pendingCombo; if(!c) return;
+  closeChoice();
+  pushToCart(c.name,'',c.price,c.veg,false,p);
+  toast(c.name+' — '+p+' added to cart');
+}
+function closeChoice(){ document.getElementById('chooseScrim').classList.remove('show'); pendingCombo=null; }
+function pushToCart(name,variant,price,veg,pz,opt){
+  opt = opt||'';
+  const ck = name+'|'+variant+'|'+opt;
+  const ex = cart.find(c=>c.key===ck);
+  if(ex) ex.qty++;
+  else cart.push({key:ck,name,variant,price,qty:1,veg,pz,opt});
+  renderCart();
+}
+function changeQty(ck,delta){
+  const i = cart.findIndex(c=>c.key===ck);
+  if(i<0)return;
+  cart[i].qty+=delta;
+  if(cart[i].qty<=0)cart.splice(i,1);
+  renderCart();
+}
+
+/* ---------- BOGO (Mon & Fri, pickup only) ---------- */
+function bogoInfo(){
+  const day = new Date().getDay(); // 1 Mon, 5 Fri
+  const dayOK = (day===1||day===5);
+  const larges = cart.filter(c=>c.pz&&c.variant==='Large').reduce((s,c)=>s+c.qty,0);
+  let smalls = [];
+  cart.filter(c=>c.pz&&c.variant==='Small').forEach(c=>{for(let i=0;i<c.qty;i++)smalls.push(c.price);});
+  smalls.sort((a,b)=>a-b);
+  const freeCount = Math.min(larges, smalls.length);
+  const discount = smalls.slice(0,freeCount).reduce((s,p)=>s+p,0);
+  return {dayOK, larges, smallCount:smalls.length, freeCount, discount};
+}
+
+/* ---------- Cart rendering (desktop + mobile share markup) ---------- */
+function cartHTML(){
+  const sub = cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const b = bogoInfo();
+  const bogoApplies = b.dayOK && order.type==='Pickup' && b.freeCount>0;
+  const disc = bogoApplies ? b.discount : 0;
+  const total = sub - disc;
+  let hint='';
+  if(b.larges>0){
+    if(!b.dayOK) hint='🎉 BOGO tip: buy 1 large, get 1 small free on Mondays & Fridays (pickup only).';
+    else if(order.type!=='Pickup') hint='🎉 It’s BOGO day! Choose Pickup at checkout & add a small pizza — it becomes FREE.';
+    else if(b.smallCount===0) hint='🎉 BOGO active! Add a small pizza — it’s FREE with your large (pickup, Mon & Fri).';
+  }
+  const lines = cart.length===0
+    ? `<div class="cart-empty"><b>🛒</b>Your cart is empty.<br>Add something cheesy!</div>`
+    : cart.map(c=>`
+      <div class="cart-line">
+        <span class="fssai ${c.veg?'veg':'nonveg'}" style="margin-top:0"></span>
+        <div class="nm">${c.name}${c.variant?`<small>${c.variant}</small>`:''}${c.opt?`<small>🍕 ${c.opt}</small>`:''}</div>
+        <div class="qty">
+          <button onclick="changeQty('${c.key.replace(/'/g,"\\'")}',-1)" aria-label="Decrease">−</button>
+          <span>${c.qty}</span>
+          <button onclick="changeQty('${c.key.replace(/'/g,"\\'")}',1)" aria-label="Increase">+</button>
+        </div>
+        <div class="pr">${INR(c.price*c.qty)}</div>
+      </div>`).join('');
+  return `
+    <div class="cart-head"><h3>Your Order</h3><span class="count-pill" style="margin-left:auto">${cart.reduce((s,c)=>s+c.qty,0)}</span></div>
+    <div class="cart-body">${lines}</div>
+    <div class="cart-foot">
+      <div class="tot-row"><span>Subtotal</span><span>${INR(sub)}</span></div>
+      ${disc>0?`<div class="tot-row save"><span>BOGO — ${b.freeCount} small pizza${b.freeCount>1?'s':''} FREE 🎉</span><span>−${INR(disc)}</span></div>`:''}
+      <div class="tot-row"><span>Home delivery</span><span style="color:var(--basil);font-weight:800">FREE</span></div>
+      <div class="tot-row grand"><span>Total</span><span>${INR(total)}</span></div>
+      ${hint?`<div class="bogo-hint">${hint}</div>`:''}
+      <button class="checkout-btn" ${cart.length===0?'disabled':''} onclick="openCheckout()">Checkout · ${INR(total)}</button>
+    </div>`;
+}
+function grandTotal(){
+  const sub = cart.reduce((s,c)=>s+c.price*c.qty,0);
+  const b = bogoInfo();
+  const disc = (b.dayOK && order.type==='Pickup') ? b.discount : 0;
+  return sub - disc;
+}
+function renderCart(){
+  const html = cartHTML();
+  document.getElementById('deskCart').innerHTML = html;
+  document.getElementById('mobCart').innerHTML = html;
+  const n = cart.reduce((s,c)=>s+c.qty,0);
+  document.getElementById('navCount').textContent = n;
+  document.getElementById('mobBarInfo').innerHTML = `<b>${n} item${n!==1?'s':''}</b> · ${INR(grandTotal())}`;
+  document.getElementById('mobBar').classList.toggle('show', n>0);
+}
+
+/* ---------- Mobile drawer ---------- */
+function openDrawer(){document.getElementById('drawer').classList.add('show');document.getElementById('drawerScrim').classList.add('show');}
+function closeDrawer(){document.getElementById('drawer').classList.remove('show');document.getElementById('drawerScrim').classList.remove('show');}
+function openCartUI(){ if(window.innerWidth>=1024){document.getElementById('deskCart').scrollIntoView({behavior:'smooth',block:'center'});} else openDrawer(); }
+
+/* ---------- Checkout modal ---------- */
+function openCheckout(){ if(cart.length===0)return; closeDrawer(); step=1; order.oid=newOrderId(); order.utr=''; renderStep(); document.getElementById('modalScrim').classList.add('show'); }
+function closeModal(){ stopQrPoll(); document.getElementById('modalScrim').classList.remove('show'); }
+function setDots(){ for(let i=1;i<=3;i++) document.getElementById('dot'+i).classList.toggle('on', i<=step); }
+
+function renderStep(){
+  setDots();
+  const body = document.getElementById('modalBody');
+  const title = document.getElementById('modalTitle');
+  if(step===1){
+    title.textContent='Your Details';
+    body.innerHTML = `
+      <div class="field"><label>Order type</label>
+        <div class="seg">
+          <button id="segDel" class="${order.type==='Delivery'?'on':''}" onclick="setType('Delivery')">🛵 Delivery (Free)</button>
+          <button id="segPic" class="${order.type==='Pickup'?'on':''}" onclick="setType('Pickup')">🏪 Pickup</button>
+        </div>
+      </div>
+      <div class="field"><label for="fBranch">Branch</label>
+        <select id="fBranch">${Object.keys(BRANCHES).map(b=>`<option ${order.branch===b?'selected':''}>${b}</option>`).join('')}</select>
+      </div>
+      <div class="field"><label for="fName">Full name</label><input id="fName" value="${order.name}" placeholder="e.g. Rahul Sharma"><div class="err" id="eName">Please enter your name.</div></div>
+      <div class="field"><label for="fPhone">Mobile number</label><input id="fPhone" inputmode="numeric" maxlength="10" value="${order.phone}" placeholder="10-digit mobile number"><div class="err" id="ePhone">Enter a valid 10-digit mobile number.</div></div>
+      <div class="field"><label for="fEmail">Email address</label><input id="fEmail" type="email" value="${order.email}" placeholder="you@example.com — your order summary is emailed here"><div class="err" id="eEmail">Please enter a valid email address.</div></div>
+      <div class="field" id="addrField" style="display:${order.type==='Delivery'?'block':'none'}"><label for="fAddr">Delivery address</label><textarea id="fAddr" rows="3" placeholder="House / street / landmark">${order.address}</textarea><div class="err" id="eAddr">Please enter your delivery address.</div></div>
+      <div class="field"><label for="fNotes">Order notes <span style="font-weight:600;color:var(--ink-soft)">(combo pizza choice, spice level…)</span></label><textarea id="fNotes" rows="2" placeholder="e.g. Meal for Two — Tandoori Chicken pizza">${order.notes}</textarea></div>
+      <button class="checkout-btn" onclick="goPay()">Continue to Payment →</button>`;
+  }
+  if(step===2){
+    title.textContent='Payment';
+    const total = grandTotal();
+    body.innerHTML = `
+      <div class="summary-box">
+        ${cart.map(c=>`<div class="tot-row"><span>${c.name}${c.variant?' ('+c.variant+')':''}${c.opt?' · '+c.opt:''} × ${c.qty}</span><span>${INR(c.price*c.qty)}</span></div>`).join('')}
+        ${(function(){const b=bogoInfo();const d=(b.dayOK&&order.type==='Pickup')?b.discount:0;return d>0?`<div class="tot-row save"><span>BOGO discount</span><span>−${INR(d)}</span></div>`:'';})()}
+        <div class="tot-row grand"><span>Total payable</span><span>${INR(total)}</span></div>
+      </div>
+      <div class="field"><label>How would you like to pay?</label>
+        <div class="seg">
+          <button id="pmQr" class="${payMethod==='QR'?'on':''}" onclick="setPayMethod('QR')">📲 UPI<br><small style="font-weight:600;font-size:.7rem">Scan QR &amp; Pay</small></button>
+          <button id="pmOnline" class="${payMethod==='ONLINE'?'on':''}" onclick="setPayMethod('ONLINE')">💳 Pay Online<br><small style="font-weight:600;font-size:.7rem">UPI app · Card</small></button>
+          <button id="pmCod" class="${payMethod==='COD'?'on':''}" onclick="setPayMethod('COD')">💵 Cash<br><small style="font-weight:600;font-size:.7rem">${order.type==='Delivery'?'on Delivery':'on Pickup'}</small></button>
+        </div>
+      </div>
+      <div id="payArea"></div>
+      <div id="ePay" style="display:none;color:var(--brick);font-weight:700;font-size:.82rem;margin-top:12px;background:#FADCD9;border-radius:10px;padding:10px 14px;text-align:left"></div>
+      <button style="width:100%;margin-top:10px;font-weight:800;color:var(--ink-soft);padding:8px" onclick="step=1;renderStep()">← Back to details</button>`;
+    renderPayArea();
+  }
+  if(step===3){
+    title.textContent='Order Confirmed';
+    const total = order.total || grandTotal();
+    const waNum = '91'+BRANCHES[order.branch];
+    const payLine = order.cod
+      ? `*Payment:* CASH ${order.type==='Delivery'?'ON DELIVERY':'ON PICKUP'} 💵 — collect ${encodeURIComponent(INR(total))}`
+      : `*Payment:* PAID ONLINE ✅ ${encodeURIComponent(INR(total))} — verified automatically by the payment gateway.`;
+    let msg = `🍕 *La Pizzariô — Order ${order.oid}*%0A%0A*Name:* ${order.name}%0A*Phone:* ${order.phone}%0A*Type:* ${order.type}%0A*Branch:* ${order.branch}%0A`;
+    if(order.type==='Delivery') msg += `*Address:* ${encodeURIComponent(order.address)}%0A`;
+    msg += `%0A*Items:*%0A`;
+    cart.forEach(c=>{ msg += `• ${encodeURIComponent(c.name)}${c.variant?' ('+encodeURIComponent(c.variant)+')':''}${c.opt?' · '+encodeURIComponent(c.opt):''} × ${c.qty}%0A`; });
+    if(order.notes) msg += `%0A*Notes:* ${encodeURIComponent(order.notes)}%0A`;
+    msg += `%0A` + payLine;
+    body.innerHTML = `
+      <div class="pay-wrap">
+        <div class="success-check">✅</div>
+        <h3 style="font-family:'Fraunces',serif;font-size:1.5rem;margin:8px 0">${order.cod?'Order placed':'Payment verified'} — thank you, ${order.name.split(' ')[0]}!</h3>
+        <p style="color:var(--ink-soft);font-size:.92rem;margin-bottom:6px">Order <b>${order.oid}</b> · ${order.type} · <b>${INR(total)}</b> ${order.cod?('to pay in cash '+(order.type==='Delivery'?'on delivery':'at pickup')):'paid online'}</p>
+        ${order.cod?`<p style="color:var(--ink-soft);font-size:.88rem;margin-bottom:14px">Please keep <b>${INR(total)}</b> ready${order.type==='Delivery'?' for our delivery rider':' at the counter'} — exact change helps!</p>`:`<p style="color:var(--ink-soft);font-size:.92rem;margin-bottom:14px">Your order is confirmed and has been sent straight to the <b>${order.branch}</b> kitchen. Keep this page open to track it live.</p>`}
+        <div class="bogo-hint" id="liveStatus" style="margin-bottom:14px;font-size:.85rem">🍳 Status: Confirmed — kitchen notified</div>
+        <a class="btn btn-upi btn-block" href="/track/${order.oid}" target="_blank" rel="noopener">🔎 Track this order live</a>
+        <p class="pay-note" style="margin-bottom:12px">${order.emailed?`📧 Your order summary has been emailed to <b>${order.email}</b>`:`📧 Save your Order ID <b>${order.oid}</b> — you can track anytime at the link above.`}</p>
+        <a class="btn btn-wa btn-block" href="https://wa.me/${waNum}?text=${msg}" target="_blank" rel="noopener">💬 Message the branch (optional)</a>
+        <p class="pay-note">Need help? Call the branch: <a href="tel:+${waNum}" style="font-weight:800">${BRANCHES[order.branch]}</a></p>
+        <button class="checkout-btn" onclick="finishOrder()">Done — Start a new order</button>
+      </div>`;
+    startStatusPoll();
+  }
+}
+function setType(t){
+  order.type=t;
+  document.getElementById('segDel').classList.toggle('on',t==='Delivery');
+  document.getElementById('segPic').classList.toggle('on',t==='Pickup');
+  document.getElementById('addrField').style.display = t==='Delivery'?'block':'none';
+  renderCart();
+}
+function goPay(){
+  order.branch = document.getElementById('fBranch').value;
+  order.name = document.getElementById('fName').value.trim();
+  order.phone = document.getElementById('fPhone').value.trim();
+  order.email = document.getElementById('fEmail').value.trim();
+  order.address = (document.getElementById('fAddr')?document.getElementById('fAddr').value.trim():'');
+  order.notes = document.getElementById('fNotes').value.trim();
+  let ok=true;
+  const show=(id,bad)=>{document.getElementById(id).style.display=bad?'block':'none'; if(bad)ok=false;};
+  show('eName', order.name.length<2);
+  show('ePhone', !/^[6-9]\d{9}$/.test(order.phone));
+  show('eEmail', !/^\S+@\S+\.\S+$/.test(order.email));
+  if(order.type==='Delivery') show('eAddr', order.address.length<6);
+  if(!ok)return;
+  step=2; renderStep();
+}
+let payMethod = 'QR';
+function setPayMethod(m){
+  payMethod = m;
+  stopQrPoll();
+  document.getElementById('pmQr').classList.toggle('on', m==='QR');
+  document.getElementById('pmOnline').classList.toggle('on', m==='ONLINE');
+  document.getElementById('pmCod').classList.toggle('on', m==='COD');
+  hidePayErr();
+  renderPayArea();
+}
+function renderPayArea(){
+  const area = document.getElementById('payArea');
+  const total = grandTotal();
+  if(payMethod==='QR'){
+    area.innerHTML = `
+      <div class="pay-wrap">
+        <p class="pay-note" style="font-size:.86rem">A QR code for exactly <b>${INR(total)}</b> will appear below. Scan it with <b>any UPI app</b> — Paytm, PhonePe, Google Pay, BHIM. Payment is <b>verified automatically</b>; the moment it's received, your order goes straight to the kitchen.</p>
+        <div id="qrArea"></div>
+        <button class="checkout-btn" id="qrBtn" onclick="startQrPay()">📲 Show QR — Pay ${INR(total)}</button>
+        <p class="pay-note" style="margin-top:10px">On your phone right now? Choose <b>💳 Pay Online</b> instead — it opens your UPI app directly.</p>
+      </div>`;
+    return;
+  }
+  if(payMethod==='ONLINE'){
+    area.innerHTML = `
+      <div class="pay-wrap">
+        <p class="pay-note" style="font-size:.86rem">Pay with any UPI app — Paytm, PhonePe, Google Pay, BHIM — or <b>credit / debit card</b> and netbanking. Your payment is <b>verified automatically in seconds</b> and the order goes straight to the kitchen.</p>
+        <div class="upi-apps"><span>Paytm</span>·<span>PhonePe</span>·<span>Google Pay</span>·<span>BHIM</span>·<span>Cards</span>·<span>Netbanking</span></div>
+        <button class="checkout-btn" id="payBtn" onclick="startPayment()">🔒 Pay ${INR(total)} securely</button>
+      </div>`;
+  } else {
+    area.innerHTML = `
+      <div class="pay-wrap">
+        <p class="pay-note" style="font-size:.86rem">Pay <b>${INR(total)} in cash</b> ${order.type==='Delivery'?'to our delivery rider when your order arrives':'at the counter when you pick up your order'}. Please keep exact change ready if possible.</p>
+        <button class="checkout-btn" id="codBtn" onclick="placeCOD()">💵 Place order — pay cash ${order.type==='Delivery'?'on delivery':'on pickup'}</button>
+      </div>`;
+  }
+}
+let placingCod = false;
+async function placeCOD(){
+  if(placingCod) return; placingCod = true;
+  const btn = document.getElementById('codBtn');
+  btn.disabled = true; btn.textContent = 'Placing your order…';
+  hidePayErr();
+  try{
+    const res = await fetch('/api/orders',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        payMethod:'COD',
+        name:order.name, phone:order.phone, email:order.email, type:order.type, branch:order.branch,
+        address:order.address, notes:order.notes,
+        items: cart.map(c=>({name:c.name, variant:c.variant, qty:c.qty, opt:c.opt||''}))
+      })
+    });
+    const d = await res.json();
+    if(!res.ok || !d.ok) throw new Error(d.error || 'Could not place the order. Please try again.');
+    order.oid = d.oid; order.total = d.total; order.cod = true; order.emailed = !!d.emailed;
+    rememberOrder(d.oid);
+    placingCod = false;
+    step = 3; renderStep();
+  }catch(e){
+    placingCod = false;
+    showPayErr(e.message || 'Something went wrong. Please try again.');
+    btn.disabled = false; btn.textContent = '💵 Place order — pay cash ' + (order.type==='Delivery'?'on delivery':'on pickup');
+  }
+}
+/* ---------- inline UPI QR flow ---------- */
+let qrTimer = null;
+function stopQrPoll(){ clearInterval(qrTimer); qrTimer = null; }
+async function startQrPay(){
+  const btn = document.getElementById('qrBtn');
+  btn.disabled = true; btn.textContent = 'Preparing your QR…';
+  hidePayErr();
+  try{
+    if(!order.oid || !order.qrMode){
+      const res = await fetch('/api/orders',{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          name:order.name, phone:order.phone, email:order.email, type:order.type, branch:order.branch,
+          address:order.address, notes:order.notes,
+          items: cart.map(c=>({name:c.name, variant:c.variant, qty:c.qty, opt:c.opt||''}))
+        })
+      });
+      const d = await res.json();
+      if(!res.ok || !d.ok) throw new Error(d.error || 'Could not create the order.');
+      order.oid = d.oid; order.total = d.total; order.cod = false; order.qrMode = true;
+    }
+    const qres = await fetch('/api/payment/upiqr',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({oid:order.oid})});
+    const q = await qres.json();
+    if(!qres.ok || !q.ok) throw new Error(q.error || 'Could not create the QR.');
+    if(q.paid){ rememberOrder(order.oid); step=3; renderStep(); return; }
+    document.getElementById('qrArea').innerHTML = `
+      <div style="display:inline-block;background:#fff;padding:12px;border-radius:14px;border:2px solid var(--line);margin:4px 0 8px">
+        <img src="${q.qrImage}" alt="UPI payment QR code" style="display:block;width:210px;height:auto">
+      </div>
+      <div class="pay-amt">${INR(order.total)}</div>
+      <div class="upi-apps"><span>Paytm</span>·<span>PhonePe</span>·<span>Google Pay</span>·<span>BHIM</span></div>
+      <div class="bogo-hint" id="qrStatus" style="margin-bottom:8px"><span class="qr-dot"></span> Waiting for your payment — verifying automatically…</div>`;
+    btn.style.display='none';
+    qrTimer = setInterval(async ()=>{
+      try{
+        const r = await fetch('/api/payment/upiqr/'+order.oid+'/status');
+        const s = await r.json();
+        if(s.ok && s.paid){
+          stopQrPoll();
+          order.emailed = !!s.emailed;
+          rememberOrder(order.oid);
+          const st = document.getElementById('qrStatus');
+          if(st) st.innerHTML = '✅ Payment received & verified!';
+          setTimeout(()=>{ step=3; renderStep(); }, 700);
+        }
+      }catch(e){}
+    }, 3500);
+  }catch(e){
+    showPayErr(e.message || 'Something went wrong. Try 💳 Pay Online instead.');
+    btn.disabled = false; btn.textContent = '📲 Show QR — Pay ' + INR(grandTotal());
+  }
+}
+
+let paying = false;
+async function startPayment(){
+  if(paying) return; paying = true;
+  const btn = document.getElementById('payBtn');
+  btn.disabled = true; btn.textContent = 'Connecting to secure payment…';
+  hidePayErr();
+  try{
+    const res = await fetch('/api/orders',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        name:order.name, phone:order.phone, email:order.email, type:order.type, branch:order.branch,
+        address:order.address, notes:order.notes,
+        items: cart.map(c=>({name:c.name, variant:c.variant, qty:c.qty, opt:c.opt||''}))
+      })
+    });
+    const d = await res.json();
+    if(!res.ok || !d.ok) throw new Error(d.error || 'Could not create the order. Please try again.');
+    order.oid = d.oid; order.total = d.total; order.cod = false;
+    const rz = new Razorpay({
+      key: d.keyId, order_id: d.rzpOrderId, amount: d.amount, currency: 'INR',
+      name: 'La Pizzariô', description: 'Order ' + d.oid,
+      prefill: {name: order.name, contact: order.phone},
+      notes: {oid: d.oid, branch: order.branch},
+      theme: {color: '#123A24'},
+      handler: async function(resp){
+        btn.textContent = 'Verifying payment…';
+        try{
+          const vr = await fetch('/api/payment/confirm',{
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({oid: d.oid,
+              razorpay_order_id: resp.razorpay_order_id,
+              razorpay_payment_id: resp.razorpay_payment_id,
+              razorpay_signature: resp.razorpay_signature})
+          });
+          const vd = await vr.json();
+          if(!vr.ok || !vd.ok) throw new Error(vd.error || 'Verification failed');
+          order.emailed = !!vd.emailed;
+          rememberOrder(d.oid);
+          paying = false;
+          step = 3; renderStep();
+        }catch(e){
+          paying = false;
+          showPayErr('Your payment went through but confirmation to our kitchen failed — do NOT pay again. Note your Order ID ' + d.oid + ' and call the branch; the payment will be matched automatically.');
+          btn.disabled = false; btn.textContent = 'Retry confirmation';
+        }
+      },
+      modal: { ondismiss: function(){
+        paying = false;
+        btn.disabled = false; btn.textContent = '🔒 Pay ' + INR(grandTotal()) + ' securely';
+      }}
+    });
+    if(rz.on) rz.on('payment.failed', function(r){
+      paying = false;
+      showPayErr('Payment failed' + (r.error && r.error.description ? ': ' + r.error.description : '') + '. No money was captured — you can try again.');
+      btn.disabled = false; btn.textContent = '🔒 Try again — Pay ' + INR(grandTotal());
+    });
+    rz.open();
+  }catch(e){
+    paying = false;
+    showPayErr(e.message || 'Something went wrong. Please check your connection and try again.');
+    btn.disabled = false; btn.textContent = '🔒 Pay ' + INR(grandTotal()) + ' securely';
+  }
+}
+function showPayErr(t){ const el=document.getElementById('ePay'); if(el){el.textContent='⚠️ '+t; el.style.display='block';} }
+function hidePayErr(){ const el=document.getElementById('ePay'); if(el) el.style.display='none'; }
+
+/* ---------- remember orders on this device so tracking is always reachable ---------- */
+function savedOrders(){
+  try{ return JSON.parse(localStorage.getItem('lp_orders')||'[]'); }catch(e){ return []; }
+}
+function rememberOrder(oid){
+  try{
+    const list = savedOrders().filter(o=>o.oid!==oid);
+    list.unshift({oid, t:Date.now()});
+    localStorage.setItem('lp_orders', JSON.stringify(list.slice(0,5)));
+  }catch(e){}
+  updateTrackPill();
+}
+let pillDismissed = false;
+function updateTrackPill(){
+  const pill = document.getElementById('trackPill');
+  if(!pill) return;
+  const recent = savedOrders().filter(o=>Date.now()-o.t < 6*60*60*1000);
+  if(recent.length && !pillDismissed){
+    pill.href = '/track/'+recent[0].oid;
+    document.getElementById('trackPillTxt').textContent = 'Track order '+recent[0].oid;
+    pill.classList.add('show');
+  } else pill.classList.remove('show');
+}
+function hideTrackPill(e){
+  e.preventDefault(); e.stopPropagation();
+  pillDismissed = true;
+  updateTrackPill();
+}
+
+let statusTimer = null;
+function startStatusPoll(){
+  clearInterval(statusTimer);
+  const map = {
+    PAID:'🍳 Status: Confirmed — kitchen notified',
+    COD:'🍳 Status: Confirmed — kitchen notified (pay cash ' + (order.type==='Delivery'?'on delivery':'at pickup') + ')',
+    PREPARING:'🍕 Status: Your order is being prepared!',
+    READY: order.type==='Delivery' ? '🛵 Status: Out for delivery!' : '📦 Status: Ready for pickup!',
+    DONE:'🎉 Status: Completed — enjoy your meal!',
+    CANCELLED:'⛔ Status: Cancelled — please call the branch.'
+  };
+  statusTimer = setInterval(async ()=>{
+    const el = document.getElementById('liveStatus');
+    if(!el){ clearInterval(statusTimer); return; }
+    try{
+      const r = await fetch('/api/orders/' + order.oid);
+      const d = await r.json();
+      if(d.ok && map[d.status]) el.textContent = map[d.status];
+      if(d.status==='DONE' || d.status==='CANCELLED') clearInterval(statusTimer);
+    }catch(e){}
+  }, 8000);
+}
+function finishOrder(){ stopQrPoll(); clearInterval(statusTimer); order.qrMode=false; order.oid=''; cart=[]; renderCart(); closeModal(); toast('Order confirmed! We’re firing up the oven 🔥'); }
+
+/* ---------- Toast + ticker ---------- */
+let toastT;
+function toast(t){
+  const el=document.getElementById('toast'); el.textContent=t; el.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),2200);
+}
+(function(){
+  const items='🍕 Free Home Delivery — 🎉 Buy 1 Large Get 1 Small FREE (Mon & Fri) — 🔥 Newly Launched: Hawaiian Pizza — 🧀 Cheese Loaded In Every Bite — 📱 Pay With Any UPI App — ';
+  document.getElementById('ticker').textContent = items + items;
+})();
+
+renderMenu();
+renderCart();
+updateTrackPill();
+</script>
+</body>
+</html>
