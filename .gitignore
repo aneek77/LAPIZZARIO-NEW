@@ -1,0 +1,5 @@
+start.bat
+db.json
+.env
+node_modules/
+originals/
