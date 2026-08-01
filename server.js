@@ -225,9 +225,7 @@ function orderEmailHTML(o) {
   const INR = n => '₹' + Number(n||0).toLocaleString('en-IN');
   const rows = o.items.map(i =>
     `<tr><td style="padding:7px 10px;border-bottom:1px dashed #E3D5B8">${esc(i.name)}${i.variant?' ('+esc(i.variant)+')':''}${i.opt?' · '+esc(i.opt):''} × ${i.qty}</td><td align="right" style="padding:7px 10px;border-bottom:1px dashed #E3D5B8;font-weight:bold">${INR(i.price*i.qty)}</td></tr>`).join('');
-  const payLine = o.pay==='COD'
-    ? `💵 Cash ${o.type==='Delivery'?'on delivery':'on pickup'} — please keep ${INR(o.total)} ready`
-    : `✅ Paid online — verified automatically`;
+  const payLine = `✅ Paid online — verified automatically`;
   const track = CFG.BASE_URL + '/track/' + o.oid;
   return `<!DOCTYPE html><html><body style="margin:0;background:#F8EFDC;font-family:Georgia,serif;color:#241F16">
   <div style="max-width:560px;margin:0 auto;padding:24px 14px">
@@ -353,24 +351,9 @@ const server = http.createServer(async (req, res) => {
       catch (e) { return send(res, 400, {ok:false, error: e.message}); }
       if (priced.total < 1) return send(res, 400, {ok:false, error:'Invalid order total.'});
 
-      /* ----- Cash on Delivery / Pickup ----- */
-      if (b.payMethod === 'COD') {
-        const oid = newOid();
-        db.orders[oid] = {
-          oid, ts: Date.now(), name, phone, email, type, branch, address, notes,
-          items: priced.items, sub: priced.sub, discount: priced.discount, total: priced.total,
-          pay: 'COD', status: 'COD', history: [{s:'COD', t: Date.now()}],
-        };
-        saveDB();
-        console.log('💵 COD order', oid, priced.total, branch);
-        const emailed = await sendOrderEmail(db.orders[oid]);
-        if (emailed) { db.orders[oid].emailSent = true; saveDB(); }
-        return send(res, 200, {ok:true, oid, cod:true, total: priced.total, emailed});
-      }
-
-      /* ----- Online payment (Razorpay) ----- */
+      /* ----- Online payment (Razorpay) — the only payment path ----- */
       if (!CFG.RAZORPAY_KEY_ID || !CFG.RAZORPAY_KEY_SECRET)
-        return send(res, 503, {ok:false, error:'Online payment is not configured yet — choose Cash on Delivery, or call the branch.'});
+        return send(res, 503, {ok:false, error:'Online payment is not configured yet. Please call the branch to order.'});
 
       const oid = newOid();
       const rzpOrder = await razorpay('/v1/orders', 'POST', {
@@ -397,7 +380,9 @@ const server = http.createServer(async (req, res) => {
       if (!CFG.RAZORPAY_KEY_ID || !CFG.RAZORPAY_KEY_SECRET)
         return send(res, 503, {ok:false, error:'Online payment is not configured yet.'});
       if (!o.qrId) {
-        const qr = await razorpay('/v1/payments/qr_codes', 'POST', {
+        let qr;
+        try {
+          qr = await razorpay('/v1/payments/qr_codes', 'POST', {
           type: 'upi_qr',
           name: 'La Pizzario ' + o.oid,
           usage: 'single_use',
@@ -406,7 +391,12 @@ const server = http.createServer(async (req, res) => {
           description: 'Order ' + o.oid,
           close_by: Math.floor(Date.now()/1000) + 20*60,
           notes: {oid: o.oid, branch: o.branch},
-        });
+          });
+        } catch (e) {
+          if (/not found|not permitted|not enabled/i.test(e.message))
+            return send(res, 503, {ok:false, error:'Scan-QR is being set up on our payment account — please use 💳 Pay Online for now (it also supports all UPI apps).'});
+          throw e;
+        }
         o.qrId = qr.id; o.qrImage = qr.image_url;
         saveDB();
       }
@@ -541,7 +531,7 @@ const server = http.createServer(async (req, res) => {
         if (!o) return send(res, 404, {ok:false, error:'Order not found.'});
         const b = JSON.parse((await readBody(req)).toString() || '{}');
         const st = String(b.status || '');
-        const flow = {PAID:['PREPARING','CANCELLED'], COD:['PREPARING','CANCELLED'], PREPARING:['READY','CANCELLED'], READY:['DONE']};
+        const flow = {PAID:['PREPARING','CANCELLED'], PREPARING:['READY','CANCELLED'], READY:['DONE']};
         if (!(flow[o.status] || []).includes(st))
           return send(res, 400, {ok:false, error:'Not allowed: ' + o.status + ' → ' + st + '. Payment status is set only by the gateway.'});
         o.status = st;
