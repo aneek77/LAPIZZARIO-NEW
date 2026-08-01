@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>La Pizzariô — The Best Pizza In Town</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,600&family=Karla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,600&family=Karla:wght@400;500;600;700;800&display=swap&family=Baumans&display=swap" rel="stylesheet">
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <style>
 :root{
@@ -43,7 +43,7 @@ a{color:inherit}
 /* ---------- Header ---------- */
 header{position:sticky;top:0;z-index:60;background:var(--basil-deep);color:var(--cream);box-shadow:0 4px 18px rgba(0,0,0,.25)}
 .nav{max-width:1280px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.logo{font-family:'Fraunces',serif;font-weight:900;font-size:1.7rem;letter-spacing:.5px}
+.logo{font-family:'Baumans',cursive;font-weight:400;font-size:1.7rem;letter-spacing:.5px}
 .logo em{font-style:normal;color:var(--gold)}
 .logo small{display:block;font-family:'Karla';font-weight:600;font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold-soft)}
 .nav-links{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
@@ -811,7 +811,6 @@ function renderStep(){
         <div class="seg">
           <button id="pmQr" class="${payMethod==='QR'?'on':''}" onclick="setPayMethod('QR')">📲 UPI<br><small style="font-weight:600;font-size:.7rem">Scan QR &amp; Pay</small></button>
           <button id="pmOnline" class="${payMethod==='ONLINE'?'on':''}" onclick="setPayMethod('ONLINE')">💳 Pay Online<br><small style="font-weight:600;font-size:.7rem">UPI app · Card</small></button>
-          <button id="pmCod" class="${payMethod==='COD'?'on':''}" onclick="setPayMethod('COD')">💵 Cash<br><small style="font-weight:600;font-size:.7rem">${order.type==='Delivery'?'on Delivery':'on Pickup'}</small></button>
         </div>
       </div>
       <div id="payArea"></div>
@@ -823,9 +822,7 @@ function renderStep(){
     title.textContent='Order Confirmed';
     const total = order.total || grandTotal();
     const waNum = '91'+BRANCHES[order.branch];
-    const payLine = order.cod
-      ? `*Payment:* CASH ${order.type==='Delivery'?'ON DELIVERY':'ON PICKUP'} 💵 — collect ${encodeURIComponent(INR(total))}`
-      : `*Payment:* PAID ONLINE ✅ ${encodeURIComponent(INR(total))} — verified automatically by the payment gateway.`;
+    const payLine = `*Payment:* PAID ONLINE ✅ ${encodeURIComponent(INR(total))} — verified automatically by the payment gateway.`;
     let msg = `🍕 *La Pizzariô — Order ${order.oid}*%0A%0A*Name:* ${order.name}%0A*Phone:* ${order.phone}%0A*Type:* ${order.type}%0A*Branch:* ${order.branch}%0A`;
     if(order.type==='Delivery') msg += `*Address:* ${encodeURIComponent(order.address)}%0A`;
     msg += `%0A*Items:*%0A`;
@@ -835,9 +832,9 @@ function renderStep(){
     body.innerHTML = `
       <div class="pay-wrap">
         <div class="success-check">✅</div>
-        <h3 style="font-family:'Fraunces',serif;font-size:1.5rem;margin:8px 0">${order.cod?'Order placed':'Payment verified'} — thank you, ${order.name.split(' ')[0]}!</h3>
-        <p style="color:var(--ink-soft);font-size:.92rem;margin-bottom:6px">Order <b>${order.oid}</b> · ${order.type} · <b>${INR(total)}</b> ${order.cod?('to pay in cash '+(order.type==='Delivery'?'on delivery':'at pickup')):'paid online'}</p>
-        ${order.cod?`<p style="color:var(--ink-soft);font-size:.88rem;margin-bottom:14px">Please keep <b>${INR(total)}</b> ready${order.type==='Delivery'?' for our delivery rider':' at the counter'} — exact change helps!</p>`:`<p style="color:var(--ink-soft);font-size:.92rem;margin-bottom:14px">Your order is confirmed and has been sent straight to the <b>${order.branch}</b> kitchen. Keep this page open to track it live.</p>`}
+        <h3 style="font-family:'Fraunces',serif;font-size:1.5rem;margin:8px 0">Payment verified — thank you, ${order.name.split(' ')[0]}!</h3>
+        <p style="color:var(--ink-soft);font-size:.92rem;margin-bottom:6px">Order <b>${order.oid}</b> · ${order.type} · <b>${INR(total)}</b> paid online</p>
+        <p style="color:var(--ink-soft);font-size:.92rem;margin-bottom:14px">Your order is confirmed and has been sent straight to the <b>${order.branch}</b> kitchen. Keep this page open to track it live.</p>
         <div class="bogo-hint" id="liveStatus" style="margin-bottom:14px;font-size:.85rem">🍳 Status: Confirmed — kitchen notified</div>
         <a class="btn btn-upi btn-block" href="/track/${order.oid}" target="_blank" rel="noopener">🔎 Track this order live</a>
         <p class="pay-note" style="margin-bottom:12px">${order.emailed?`📧 Your order summary has been emailed to <b>${order.email}</b>`:`📧 Save your Order ID <b>${order.oid}</b> — you can track anytime at the link above.`}</p>
@@ -877,7 +874,6 @@ function setPayMethod(m){
   stopQrPoll();
   document.getElementById('pmQr').classList.toggle('on', m==='QR');
   document.getElementById('pmOnline').classList.toggle('on', m==='ONLINE');
-  document.getElementById('pmCod').classList.toggle('on', m==='COD');
   hidePayErr();
   renderPayArea();
 }
@@ -901,40 +897,6 @@ function renderPayArea(){
         <div class="upi-apps"><span>Paytm</span>·<span>PhonePe</span>·<span>Google Pay</span>·<span>BHIM</span>·<span>Cards</span>·<span>Netbanking</span></div>
         <button class="checkout-btn" id="payBtn" onclick="startPayment()">🔒 Pay ${INR(total)} securely</button>
       </div>`;
-  } else {
-    area.innerHTML = `
-      <div class="pay-wrap">
-        <p class="pay-note" style="font-size:.86rem">Pay <b>${INR(total)} in cash</b> ${order.type==='Delivery'?'to our delivery rider when your order arrives':'at the counter when you pick up your order'}. Please keep exact change ready if possible.</p>
-        <button class="checkout-btn" id="codBtn" onclick="placeCOD()">💵 Place order — pay cash ${order.type==='Delivery'?'on delivery':'on pickup'}</button>
-      </div>`;
-  }
-}
-let placingCod = false;
-async function placeCOD(){
-  if(placingCod) return; placingCod = true;
-  const btn = document.getElementById('codBtn');
-  btn.disabled = true; btn.textContent = 'Placing your order…';
-  hidePayErr();
-  try{
-    const res = await fetch('/api/orders',{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        payMethod:'COD',
-        name:order.name, phone:order.phone, email:order.email, type:order.type, branch:order.branch,
-        address:order.address, notes:order.notes,
-        items: cart.map(c=>({name:c.name, variant:c.variant, qty:c.qty, opt:c.opt||''}))
-      })
-    });
-    const d = await res.json();
-    if(!res.ok || !d.ok) throw new Error(d.error || 'Could not place the order. Please try again.');
-    order.oid = d.oid; order.total = d.total; order.cod = true; order.emailed = !!d.emailed;
-    rememberOrder(d.oid);
-    placingCod = false;
-    step = 3; renderStep();
-  }catch(e){
-    placingCod = false;
-    showPayErr(e.message || 'Something went wrong. Please try again.');
-    btn.disabled = false; btn.textContent = '💵 Place order — pay cash ' + (order.type==='Delivery'?'on delivery':'on pickup');
   }
 }
 /* ---------- inline UPI QR flow ---------- */
@@ -956,7 +918,7 @@ async function startQrPay(){
       });
       const d = await res.json();
       if(!res.ok || !d.ok) throw new Error(d.error || 'Could not create the order.');
-      order.oid = d.oid; order.total = d.total; order.cod = false; order.qrMode = true;
+      order.oid = d.oid; order.total = d.total; order.qrMode = true;
     }
     const qres = await fetch('/api/payment/upiqr',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({oid:order.oid})});
     const q = await qres.json();
@@ -1007,7 +969,7 @@ async function startPayment(){
     });
     const d = await res.json();
     if(!res.ok || !d.ok) throw new Error(d.error || 'Could not create the order. Please try again.');
-    order.oid = d.oid; order.total = d.total; order.cod = false;
+    order.oid = d.oid; order.total = d.total;
     const rz = new Razorpay({
       key: d.keyId, order_id: d.rzpOrderId, amount: d.amount, currency: 'INR',
       name: 'La Pizzariô', description: 'Order ' + d.oid,
@@ -1090,7 +1052,6 @@ function startStatusPoll(){
   clearInterval(statusTimer);
   const map = {
     PAID:'🍳 Status: Confirmed — kitchen notified',
-    COD:'🍳 Status: Confirmed — kitchen notified (pay cash ' + (order.type==='Delivery'?'on delivery':'at pickup') + ')',
     PREPARING:'🍕 Status: Your order is being prepared!',
     READY: order.type==='Delivery' ? '🛵 Status: Out for delivery!' : '📦 Status: Ready for pickup!',
     DONE:'🎉 Status: Completed — enjoy your meal!',

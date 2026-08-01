@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Track Your Order — La Pizzariô</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Karla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Karla:wght@400;500;600;700;800&display=swap&family=Baumans&display=swap" rel="stylesheet">
 <style>
 :root{
   --paper:#F8EFDC;--cream:#FFFAEE;--black:#123A24;--ink:#241F16;--ink-soft:#5C5343;
@@ -17,7 +17,7 @@
 body{font-family:'Karla',sans-serif;background:var(--paper);color:var(--ink);line-height:1.5;min-height:100vh}
 .awning{height:12px;background:repeating-linear-gradient(90deg,var(--brick) 0 32px,var(--cream) 32px 64px)}
 header{background:var(--basil-deep);color:var(--cream);padding:18px 20px;text-align:center}
-.logo{font-family:'Fraunces',serif;font-weight:900;font-size:1.6rem}
+.logo{font-family:'Baumans',cursive;font-weight:400;font-size:1.6rem}
 .logo em{font-style:normal;color:var(--gold)}
 .logo small{display:block;font-family:'Karla';font-weight:700;font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold-soft)}
 .wrap{max-width:560px;margin:0 auto;padding:26px 16px 60px}
@@ -100,7 +100,7 @@ function getOid(){
 }
 const OID = getOid();
 
-const STEP_IDX = {PAID:0, COD:0, CREATED:-1, PREPARING:1, READY:2, DONE:3, CANCELLED:-2};
+const STEP_IDX = {PAID:0, CREATED:-1, PREPARING:1, READY:2, DONE:3, CANCELLED:-2};
 
 function timeOf(history, statuses){
   for(const s of statuses){
@@ -121,7 +121,7 @@ function render(o){
       <h1>Order ${esc(o.oid)}</h1>
       <div class="sub">${o.type} · ${esc(o.branch)} branch</div>
       <div class="big-status cancel">⛔ This order was cancelled</div>
-      <p style="font-size:.86rem;color:var(--ink-soft)">Please contact the ${esc(o.branch)} branch for details${o.pay!=='COD'?' — online payments are refunded via the payment gateway':''}.</p>`;
+      <p style="font-size:.86rem;color:var(--ink-soft)">Please contact the ${esc(o.branch)} branch for details — online payments are refunded via the payment gateway.</p>`;
   } else if(o.status==='CREATED'){
     sc.innerHTML = `
       <h1>Order ${esc(o.oid)}</h1>
@@ -130,7 +130,7 @@ function render(o){
       <p style="font-size:.86rem;color:var(--ink-soft)">This order's online payment hasn't been completed yet. Once paid, tracking starts automatically.</p>`;
   } else {
     const steps = [
-      {icon:'✅', label:'Order confirmed', small: (o.pay==='COD'?'Cash '+(isDelivery?'on delivery':'on pickup')+' · ':'Paid online · ') + timeOf(o.history,['PAID','COD']), key:0},
+      {icon:'✅', label:'Order confirmed', small: 'Paid online · ' + timeOf(o.history,['PAID']), key:0},
       {icon:'🍳', label:'Being prepared', small: timeOf(o.history,['PREPARING']) || 'Fresh in our oven', key:1},
       {icon: isDelivery?'🛵':'📦', label: isDelivery?'Out for delivery':'Ready for pickup', small: timeOf(o.history,['READY']) || (isDelivery?'Rider details appear here':'Ready at the counter'), key:2},
       {icon:'🎉', label: isDelivery?'Delivered':'Picked up', small: timeOf(o.history,['DONE']) || 'Enjoy your meal!', key:3},
@@ -164,7 +164,7 @@ function render(o){
     ${(o.items||[]).map(i=>`<div class="it-row"><span>${esc(i.name)}${i.variant?' ('+esc(i.variant)+')':''}${i.opt?' · '+esc(i.opt):''} × ${i.qty}</span><span>${INR(i.price*i.qty)}</span></div>`).join('')}
     ${o.discount>0?`<div class="it-row save"><span>BOGO discount</span><span>−${INR(o.discount)}</span></div>`:''}
     <div class="tot"><span>Total</span><span>${INR(o.total)}</span></div>
-    <span class="pill">${o.pay==='COD'?('💵 Pay '+INR(o.total)+' in cash '+(o.type==='Delivery'?'on delivery':'at pickup')):'✅ Paid online'}</span>`;
+    <span class="pill">✅ Paid online</span>`;
 
   if(o.status==='DONE'||o.status==='CANCELLED'){
     clearInterval(timer);
@@ -177,7 +177,7 @@ function fail(msg){
     `<div class="err-box"><b>😕</b><strong>${esc(msg)}</strong><br><span style="font-size:.85rem;color:var(--ink-soft)">Check the tracking link from your confirmation email — or <a href="/track" style="font-weight:800;color:var(--brick)">find your order by mobile number</a>.</span></div>`;
 }
 
-const ST_TXT = {PAID:'Confirmed', COD:'Confirmed', PREPARING:'Preparing', READY:'On its way', DONE:'Completed', CANCELLED:'Cancelled'};
+const ST_TXT = {PAID:'Confirmed', PREPARING:'Preparing', READY:'On its way', DONE:'Completed', CANCELLED:'Cancelled'};
 function savedOrders(){
   try{ return JSON.parse(localStorage.getItem('lp_orders')||'[]'); }catch(e){ return []; }
 }

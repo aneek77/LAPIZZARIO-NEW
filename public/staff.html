@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>La Pizzariô — Staff Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,900&family=Karla:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,900&family=Karla:wght@400;500;600;700;800&display=swap&family=Baumans&display=swap" rel="stylesheet">
 <style>
 :root{
   --paper:#F4EEDE;--cream:#FFFAEE;--ink:#241F16;--ink-soft:#5C5343;
@@ -21,7 +21,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 
 header{position:sticky;top:0;z-index:50;background:var(--basil-deep);color:var(--cream);box-shadow:0 4px 16px rgba(0,0,0,.25)}
 .nav{max-width:1360px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.logo{font-family:'Fraunces',serif;font-weight:900;font-size:1.4rem}
+.logo{font-family:'Baumans',cursive;font-weight:400;font-size:1.4rem}
 .logo em{font-style:normal;color:var(--gold)}
 .logo small{display:block;font-size:.6rem;font-weight:700;letter-spacing:.26em;text-transform:uppercase;color:var(--gold-soft)}
 .who{margin-left:auto;display:flex;align-items:center;gap:10px;font-weight:700;font-size:.85rem;flex-wrap:wrap}
@@ -40,7 +40,7 @@ header{position:sticky;top:0;z-index:50;background:var(--basil-deep);color:var(-
 /* Login gate */
 .gate{max-width:420px;margin:9vh auto;background:var(--cream);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
 .gate-head{background:var(--basil-deep);color:var(--cream);padding:22px;text-align:center}
-.gate-head h1{font-family:'Fraunces',serif;font-weight:900;font-size:1.5rem}
+.gate-head h1{font-family:'Baumans',cursive;font-weight:400;font-size:1.6rem}
 .gate-head h1 em{font-style:normal;color:var(--gold)}
 .gate-head p{font-size:.8rem;color:var(--gold-soft);font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-top:4px}
 .gate-body{padding:24px}
@@ -90,8 +90,6 @@ header{position:sticky;top:0;z-index:50;background:var(--basil-deep);color:var(-
 .st-DONE{background:#E8E4D8;color:var(--ink-soft)}
 .st-CANCELLED{background:var(--brick);color:#fff}
 .st-CREATED{background:#FCE8C8;color:#8a5f0e}
-.st-COD{background:#FCE8C8;color:#8a5f0e}
-.cod-box{background:#FCF3DC;border:1.5px solid var(--gold);border-radius:10px;padding:9px 12px;margin-top:10px;font-size:.78rem;font-weight:700;color:#7a5a12}
 .card-body{padding:12px 16px;font-size:.85rem;flex:1}
 .meta{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--ink-soft);font-weight:700;font-size:.78rem;margin-bottom:9px}
 .items{border-top:1px dashed var(--line);padding-top:8px;margin-top:2px}
@@ -157,7 +155,7 @@ header{position:sticky;top:0;z-index:50;background:var(--basil-deep);color:var(-
       </div>
       <div class="gate-err" id="gErr">Incorrect PIN. Please try again.</div>
       <button class="gate-btn" onclick="login()">Open Dashboard →</button>
-      <p class="gate-note">✅ Online payments are verified automatically by the gateway.<br>💵 Cash-on-delivery orders show the amount to collect.</p>
+      <p class="gate-note">✅ Payments are verified automatically by the payment gateway.<br>Every order you see here is already paid — just cook.</p>
     </div>
   </div>
 </div>
@@ -200,9 +198,9 @@ header{position:sticky;top:0;z-index:50;background:var(--basil-deep);color:var(-
 
 <script>
 const BRANCHES = ['Bidhannagar','Chandidas','S.B. More','Prantika','Raniganj','Asansol','Bolpur'];
-const TABS = ['PAID','COD','PREPARING','READY','DONE','CANCELLED','CREATED'];
+const TABS = ['PAID','PREPARING','READY','DONE','CANCELLED','CREATED'];
 const ST_LABEL = {
-  PAID:'🆕 New — Paid ✓', COD:'💵 New — Cash on Delivery', PREPARING:'🍳 Preparing', READY:'📦 Ready / Out for Delivery',
+  PAID:'🆕 New — Paid ✓', PREPARING:'🍳 Preparing', READY:'📦 Ready / Out for Delivery',
   DONE:'🎉 Completed', CANCELLED:'⛔ Cancelled', CREATED:'💤 Unpaid / Abandoned'
 };
 const INR = n => '₹' + Number(n||0).toLocaleString('en-IN');
@@ -265,7 +263,7 @@ async function loadOrders(manual){
   try{
     const d = await api('/api/staff/orders?branch=' + encodeURIComponent(me.branch));
     orders = d.orders || [];
-    const freshPaid = orders.filter(o=>(o.status==='PAID'||o.status==='COD') && !knownPaid.has(o.oid));
+    const freshPaid = orders.filter(o=>o.status==='PAID' && !knownPaid.has(o.oid));
     orders.filter(o=>o.status!=='CREATED').forEach(o=>knownPaid.add(o.oid));
     if(!firstLoad && freshPaid.length){
       toast('🔔 ' + freshPaid.length + ' new paid order' + (freshPaid.length>1?'s':'') + ' — start cooking!');
@@ -304,9 +302,9 @@ function renderAll(flashIds){
 function renderStats(){
   const list = visibleOrders();
   const today = list.filter(o=>isToday(o.ts) && o.status!=='CREATED' && o.status!=='CANCELLED');
-  const fresh = list.filter(o=>o.status==='PAID'||o.status==='COD').length;
+  const fresh = list.filter(o=>o.status==='PAID').length;
   const cooking = list.filter(o=>o.status==='PREPARING').length;
-  const revenue = today.reduce((s,o)=> s + ((o.pay==='COD' && o.status!=='DONE') ? 0 : o.total), 0);
+  const revenue = today.reduce((s,o)=> s + o.total, 0);
   document.getElementById('stats').innerHTML = `
     <div class="stat hot"><b>${fresh}</b><span>New Paid Orders</span></div>
     <div class="stat"><b>${cooking}</b><span>In the Kitchen</span></div>
@@ -351,9 +349,7 @@ function renderOrders(flashIds){
         </div>
         ${o.status==='CREATED'
           ? `<div class="notes-box">💤 Customer opened payment but hasn't completed it. Do NOT prepare.</div>`
-          : o.pay==='COD'
-            ? `<div class="cod-box">💵 CASH ${o.type==='Delivery'?'ON DELIVERY':'ON PICKUP'} — collect <b>${INR(o.total)}</b> from the customer${o.status==='DONE'?' ✓ collected':''}</div>`
-            : `<div class="paid-box">✅ PAID ${INR(o.total)} — verified automatically by Razorpay<small>Payment ID: ${o.paymentId||'—'} · ${o.paidAt?new Date(o.paidAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):''}</small></div>`}
+          : `<div class="paid-box">✅ PAID ${INR(o.total)} — verified automatically by Razorpay<small>Payment ID: ${o.paymentId||'—'} · ${o.paidAt?new Date(o.paidAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):''}</small></div>`}
         ${o.driver&&o.driver.name?`<div class="notes-box" style="font-style:normal;font-weight:700">🛵 Rider: ${o.driver.name}${o.driver.phone?' · <a href="tel:+91'+o.driver.phone+'" style="color:inherit">'+o.driver.phone+'</a>':''}</div>`:''}
         ${o.notes?`<div class="notes-box">📝 ${o.notes}</div>`:''}
         ${o.status==='CANCELLED'&&o.cancelReason?`<div class="reject-reason">⛔ ${o.cancelReason} — refund via Razorpay dashboard if payment was captured.</div>`:''}
@@ -365,12 +361,11 @@ function renderOrders(flashIds){
 }
 function actionButtons(o){
   switch(o.status){
-    case 'PAID':
-    case 'COD': return `<button class="btn btn-blue" onclick="setStatus('${o.oid}','PREPARING')">🍳 Start preparing</button><button class="btn btn-red" onclick="cancelOrder('${o.oid}')">⛔ Cancel</button>`;
+    case 'PAID': return `<button class="btn btn-blue" onclick="setStatus('${o.oid}','PREPARING')">🍳 Start preparing</button><button class="btn btn-red" onclick="cancelOrder('${o.oid}')">⛔ Cancel</button>`;
     case 'PREPARING': return o.type==='Delivery'
       ? `<button class="btn btn-green" onclick="openDriverPick('${o.oid}')">🛵 Out for delivery — assign rider</button><button class="btn btn-red" onclick="cancelOrder('${o.oid}')">⛔ Cancel</button>`
       : `<button class="btn btn-green" onclick="setStatus('${o.oid}','READY')">📦 Mark ready</button><button class="btn btn-red" onclick="cancelOrder('${o.oid}')">⛔ Cancel</button>`;
-    case 'READY': return `<button class="btn btn-gold" onclick="setStatus('${o.oid}','DONE')">${o.pay==='COD'?'💵 Cash collected — complete':'🎉 Complete order'}</button>`;
+    case 'READY': return `<button class="btn btn-gold" onclick="setStatus('${o.oid}','DONE')">🎉 Complete order</button>`;
     default: return '';
   }
 }
@@ -384,8 +379,7 @@ async function setStatus(oid, st, reason, driver){
   }catch(e){ toast('⚠️ '+e.message); }
 }
 function cancelOrder(oid){
-  const o = orders.find(x=>x.oid===oid);
-  const reason = prompt('Reason for cancelling '+oid+(o&&o.pay==='COD'?':':' (customer will need a refund via the Razorpay dashboard):'));
+  const reason = prompt('Reason for cancelling '+oid+' (customer will need a refund via the Razorpay dashboard):');
   if(reason===null) return;
   setStatus(oid,'CANCELLED',reason||'Cancelled by staff');
 }
