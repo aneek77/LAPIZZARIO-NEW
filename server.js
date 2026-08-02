@@ -38,58 +38,84 @@ const CFG = {
 
 const BRANCHES = ['Bidhannagar','Chandidas','S.B. More','Prantika','Raniganj','Asansol','Bolpur'];
 
+/* ============================================================
+   DELIVERY AREA CHECK — "out of range" blocking
+   ------------------------------------------------------------
+   Fill in the PIN codes each branch actually delivers to.
+   A branch with an EMPTY array here delivers everywhere (no
+   blocking) — so nothing breaks until you add real data.
+   Once you list even one PIN code for a branch, delivery to any
+   OTHER PIN code for that branch is blocked automatically, and
+   the customer is told to try Pickup or a different branch.
+   Example:  'Asansol': ['713301','713302','713303'],
+   ============================================================ */
+const SERVICEABLE_PINCODES = {
+  'Bidhannagar': [],
+  'Chandidas': [],
+  'S.B. More': [],
+  'Prantika': [],
+  'Raniganj': [],
+  'Asansol': [],
+  'Bolpur': [],
+};
+function pincodeAllowed(branch, pincode) {
+  const list = SERVICEABLE_PINCODES[branch] || [];
+  if (list.length === 0) return true;   // unconfigured branch = no restriction yet
+  return list.includes(String(pincode || '').trim());
+}
+
 /* ------------------- MENU: single source of truth -------------------
    The server recomputes every order total from this table.
    Whatever prices a tampered client sends are IGNORED.           */
 const MENU = [
  // Veg pizzas (pz = counts for the BOGO offer)
- {n:'Hawain Pizza', pz:1, p:{Small:240,Medium:360,Large:570}},
- {n:'Pizzario Garden Fresh', pz:1, p:{Small:170,Medium:280,Large:430}},
- {n:'Veggie Deluxe', pz:1, p:{Small:230,Medium:340,Large:470}},
- {n:'Cheesy Mushroom Pizza', pz:1, p:{Small:150,Medium:260,Large:400}},
- {n:'Cheesy Tomato Pizza', pz:1, p:{Small:130,Medium:250,Large:380}},
- {n:'Classic Veg. Pizza', pz:1, p:{Small:160,Medium:280,Large:410}},
- {n:'Margherita Pizza', pz:1, p:{Small:100,Medium:200,Large:320}},
- {n:'Green Pepper Pizza', pz:1, p:{Small:130,Medium:240,Large:350}},
- {n:'Onion Pizza', pz:1, p:{Small:120,Medium:230,Large:360}},
- {n:'Golden Corn and Cheese Pizza', pz:1, p:{Small:140,Medium:260,Large:370}},
- {n:'Veggie Exotica Pizza', pz:1, p:{Small:240,Medium:360,Large:510}},
- {n:'Paneer Tikka Pizza', pz:1, p:{Small:250,Medium:380,Large:520}},
- {n:'Corny Paneer Pizza', pz:1, p:{Small:230,Medium:370,Large:510}},
- {n:'Cheesy Paneer Pizza', pz:1, p:{Small:230,Medium:370,Large:510}},
- {n:'Paneer Deluxe', pz:1, p:{Small:260,Medium:390,Large:530}},
- {n:'Kids Delite Pizza', pz:1, p:{Small:190,Medium:290,Large:410}},
+ {n:'Hawain Pizza', isPizza:1, pz:1, p:{Small:240,Medium:360,Large:570}},
+ {n:'Pizzario Garden Fresh', isPizza:1, pz:1, p:{Small:170,Medium:280,Large:430}},
+ {n:'Veggie Deluxe', isPizza:1, pz:1, p:{Small:230,Medium:340,Large:470}},
+ {n:'Cheesy Mushroom Pizza', isPizza:1, pz:1, p:{Small:150,Medium:260,Large:400}},
+ {n:'Cheesy Tomato Pizza', isPizza:1, pz:1, p:{Small:130,Medium:250,Large:380}},
+ {n:'Classic Veg. Pizza', isPizza:1, pz:1, p:{Small:160,Medium:280,Large:410}},
+ {n:'Margherita Pizza', isPizza:1, pz:1, p:{Small:100,Medium:200,Large:320}},
+ {n:'Green Pepper Pizza', isPizza:1, pz:1, p:{Small:130,Medium:240,Large:350}},
+ {n:'Onion Pizza', isPizza:1, pz:1, p:{Small:120,Medium:230,Large:360}},
+ {n:'Golden Corn and Cheese Pizza', isPizza:1, pz:1, p:{Small:140,Medium:260,Large:370}},
+ {n:'Veggie Exotica Pizza', isPizza:1, pz:1, p:{Small:240,Medium:360,Large:510}},
+ {n:'Paneer Tikka Pizza', isPizza:1, pz:1, p:{Small:250,Medium:380,Large:520}},
+ {n:'Corny Paneer Pizza', isPizza:1, pz:1, p:{Small:230,Medium:370,Large:510}},
+ {n:'Cheesy Paneer Pizza', isPizza:1, pz:1, p:{Small:230,Medium:370,Large:510}},
+ {n:'Paneer Deluxe', isPizza:1, pz:1, p:{Small:260,Medium:390,Large:530}},
+ {n:'Kids Delite Pizza', isPizza:1, pz:1, p:{Small:190,Medium:290,Large:410}},
  // Non-veg pizzas
- {n:'Chicken Hawain Pizza', pz:1, p:{Small:260,Medium:370,Large:550}},
- {n:'Chicken Olicano Pizza', pz:1, p:{Small:220,Medium:360,Large:510}},
- {n:'Tandoori Chicken Pizza', pz:1, p:{Small:230,Medium:360,Large:510}},
- {n:'Hot & Spicy Chicken Pizza', pz:1, p:{Small:230,Medium:360,Large:510}},
- {n:'Golden Corn and Chicken Pizza', pz:1, p:{Small:200,Medium:310,Large:430}},
- {n:'Chicken Green Pepper Pizza', pz:1, p:{Small:180,Medium:290,Large:420}},
- {n:'Pizzario Special Pizza', pz:1, p:{Small:290,Medium:430,Large:620}},
- {n:'Chicken & Onion Pizza', pz:1, p:{Small:190,Medium:290,Large:430}},
- {n:'Cheesy Chicken Pizza', pz:1, p:{Small:180,Medium:290,Large:410}},
- {n:'Chicken Deluxe Pizza', pz:1, p:{Small:260,Medium:370,Large:530}},
- {n:'Sizzling Spicy Kebab Pizza', pz:1, p:{Small:260,Medium:370,Large:530}},
- {n:'Chicken Supremo Pizza', pz:1, p:{Small:260,Medium:370,Large:530}},
- {n:'Chicken Salami Lover Pizza', pz:1, p:{Small:230,Medium:360,Large:510}},
+ {n:'Chicken Hawain Pizza', isPizza:1, pz:1, p:{Small:260,Medium:370,Large:550}},
+ {n:'Chicken Olicano Pizza', isPizza:1, pz:1, p:{Small:220,Medium:360,Large:510}},
+ {n:'Tandoori Chicken Pizza', isPizza:1, pz:1, p:{Small:230,Medium:360,Large:510}},
+ {n:'Hot & Spicy Chicken Pizza', isPizza:1, pz:1, p:{Small:230,Medium:360,Large:510}},
+ {n:'Golden Corn and Chicken Pizza', isPizza:1, pz:1, p:{Small:200,Medium:310,Large:430}},
+ {n:'Chicken Green Pepper Pizza', isPizza:1, pz:1, p:{Small:180,Medium:290,Large:420}},
+ {n:'Pizzario Special Pizza', isPizza:1, pz:1, p:{Small:290,Medium:430,Large:620}},
+ {n:'Chicken & Onion Pizza', isPizza:1, pz:1, p:{Small:190,Medium:290,Large:430}},
+ {n:'Cheesy Chicken Pizza', isPizza:1, pz:1, p:{Small:180,Medium:290,Large:410}},
+ {n:'Chicken Deluxe Pizza', isPizza:1, pz:1, p:{Small:260,Medium:370,Large:530}},
+ {n:'Sizzling Spicy Kebab Pizza', isPizza:1, pz:1, p:{Small:260,Medium:370,Large:530}},
+ {n:'Chicken Supremo Pizza', isPizza:1, pz:1, p:{Small:260,Medium:370,Large:530}},
+ {n:'Chicken Salami Lover Pizza', isPizza:1, pz:1, p:{Small:230,Medium:360,Large:510}},
  // Stuffed crust — veg
- {n:'Classic Veg. Cheese St. Crust', p:{Medium:420,Large:560}},
- {n:'Veggie Exotica St. Crust Pizza', p:{Medium:430,Large:580}},
- {n:'Golden Corn & Cheese St. Crust', p:{Medium:370,Large:560}},
- {n:'Paneer Deluxe St. Crust', p:{Medium:450,Large:600}},
- {n:'Paneer Tikka St. Crust', p:{Medium:430,Large:580}},
- {n:'Margherita St. Crust', p:{Medium:360,Large:500}},
- {n:'Corny Paneer St. Crust', p:{Medium:430,Large:580}},
- {n:'Veg. Hawaiian St. Crust', p:{Medium:430,Large:580}},
+ {n:'Classic Veg. Cheese St. Crust', isPizza:1, p:{Medium:420,Large:560}},
+ {n:'Veggie Exotica St. Crust Pizza', isPizza:1, p:{Medium:430,Large:580}},
+ {n:'Golden Corn & Cheese St. Crust', isPizza:1, p:{Medium:370,Large:560}},
+ {n:'Paneer Deluxe St. Crust', isPizza:1, p:{Medium:450,Large:600}},
+ {n:'Paneer Tikka St. Crust', isPizza:1, p:{Medium:430,Large:580}},
+ {n:'Margherita St. Crust', isPizza:1, p:{Medium:360,Large:500}},
+ {n:'Corny Paneer St. Crust', isPizza:1, p:{Medium:430,Large:580}},
+ {n:'Veg. Hawaiian St. Crust', isPizza:1, p:{Medium:430,Large:580}},
  // Stuffed crust — non-veg
- {n:'Tandoori Chicken Cheese St. Crust', p:{Medium:430,Large:600}},
- {n:'Hot & Spicy Cheese St. Crust', p:{Medium:430,Large:600}},
- {n:'Supremo Cheese St. Crust', p:{Medium:450,Large:630}},
- {n:'Chicken Deluxe St. Crust Pizza', p:{Medium:450,Large:630}},
- {n:'Chicken Hawaiian St. Crust Pizza', p:{Medium:450,Large:630}},
- {n:'Golden Corn & Chicken St. Crust', p:{Medium:380,Large:580}},
- {n:'Pizzario Special St. Crust Pizza', p:{Medium:490,Large:690}},
+ {n:'Tandoori Chicken Cheese St. Crust', isPizza:1, p:{Medium:430,Large:600}},
+ {n:'Hot & Spicy Cheese St. Crust', isPizza:1, p:{Medium:430,Large:600}},
+ {n:'Supremo Cheese St. Crust', isPizza:1, p:{Medium:450,Large:630}},
+ {n:'Chicken Deluxe St. Crust Pizza', isPizza:1, p:{Medium:450,Large:630}},
+ {n:'Chicken Hawaiian St. Crust Pizza', isPizza:1, p:{Medium:450,Large:630}},
+ {n:'Golden Corn & Chicken St. Crust', isPizza:1, p:{Medium:380,Large:580}},
+ {n:'Pizzario Special St. Crust Pizza', isPizza:1, p:{Medium:490,Large:690}},
  // Veg starters
  {n:'Garlic Bread with Cheese', p:{'':130}},
  {n:'Pizza Pocket Veg.', p:{'':140}},
@@ -142,7 +168,7 @@ const MENU = [
 ];
 const PRICE = {};
 MENU.forEach(m => Object.entries(m.p).forEach(([v, pr]) => {
-  PRICE[m.n + '|' + v] = {price: pr, pz: !!m.pz};
+  PRICE[m.n + '|' + v] = {price: pr, pz: !!m.pz, isPizza: !!m.isPizza};
 }));
 
 /* ------------------- Tiny JSON-file database ------------------- */
@@ -180,8 +206,12 @@ function computeTotal(rawItems, type) {
     const qty = Math.max(1, Math.min(50, parseInt(it.qty, 10) || 1));
     sub += rec.price * qty;
     const opt = String(it.opt || '').slice(0, 60);
-    items.push({name: it.name, variant: it.variant || '', qty, price: rec.price, pz: rec.pz, opt});
+    items.push({name: it.name, variant: it.variant || '', qty, price: rec.price, pz: rec.pz, isPizza: rec.isPizza, opt});
   }
+  const hasTopping = items.some(c => c.name.endsWith('(Extra Topping)'));
+  const hasPizza = items.some(c => c.isPizza);
+  if (hasTopping && !hasPizza)
+    throw new Error('Extra toppings need a pizza in the same order — please add a pizza first.');
   // BOGO: Mon(1)/Fri(5), pickup only — cheapest small pizza free per large pizza
   let discount = 0;
   const day = new Date().getDay();
@@ -242,7 +272,7 @@ function orderEmailHTML(o) {
         <tr><td style="padding:10px;font-weight:bold;font-size:16px;border-top:2px solid #E3D5B8">Total</td><td align="right" style="padding:10px;font-weight:bold;font-size:16px;border-top:2px solid #E3D5B8">${INR(o.total)}</td></tr>
       </table>
       <p style="margin:16px 0 6px;font-weight:bold">${payLine}</p>
-      ${o.type==='Delivery'?`<p style="margin:0 0 6px;color:#5C5343">🏠 Delivering to: ${esc(o.address)}</p>`:`<p style="margin:0 0 6px;color:#5C5343">🏪 Pickup from our ${esc(o.branch)} branch</p>`}
+      ${o.type==='Delivery'?`<p style="margin:0 0 6px;color:#5C5343">🏠 Delivering to: ${esc(o.address)}${o.pincode?' — PIN '+esc(o.pincode):''}</p>`:`<p style="margin:0 0 6px;color:#5C5343">🏪 Pickup from our ${esc(o.branch)} branch</p>`}
       ${o.notes?`<p style="margin:0 0 6px;color:#5C5343">📝 Notes: ${esc(o.notes)}</p>`:''}
       <div style="text-align:center;margin:22px 0 8px">
         <a href="${track}" style="background:#A8271F;color:#fff;text-decoration:none;font-weight:bold;padding:13px 28px;border-radius:99px;display:inline-block">🔎 Track your order live</a>
@@ -330,6 +360,15 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, {ok:true, gateway: !!(CFG.RAZORPAY_KEY_ID && CFG.RAZORPAY_KEY_SECRET), webhook: !!CFG.RAZORPAY_WEBHOOK_SECRET});
     }
 
+    /* ---------- live delivery-range check (instant feedback while typing) ---------- */
+    if (req.method === 'GET' && p === '/api/delivery-check') {
+      const branch = url.searchParams.get('branch') || '';
+      const pincode = String(url.searchParams.get('pincode') || '').trim();
+      if (!BRANCHES.includes(branch)) return send(res, 400, {ok:false, error:'Invalid branch.'});
+      if (!/^\d{6}$/.test(pincode)) return send(res, 200, {ok:true, valid:false});
+      return send(res, 200, {ok:true, valid:true, deliverable: pincodeAllowed(branch, pincode)});
+    }
+
     /* ---------- create order (customer) ---------- */
     if (req.method === 'POST' && p === '/api/orders') {
       const b = JSON.parse((await readBody(req)).toString() || '{}');
@@ -338,6 +377,7 @@ const server = http.createServer(async (req, res) => {
       const type = b.type === 'Pickup' ? 'Pickup' : 'Delivery';
       const branch = BRANCHES.includes(b.branch) ? b.branch : null;
       const address = String(b.address || '').trim().slice(0, 400);
+      const pincode = String(b.pincode || '').trim();
       const notes = String(b.notes || '').trim().slice(0, 400);
       const email = String(b.email || '').trim().slice(0, 120);
       if (name.length < 2) return send(res, 400, {ok:false, error:'Please enter your name.'});
@@ -345,6 +385,11 @@ const server = http.createServer(async (req, res) => {
       if (!/^\S+@\S+\.\S+$/.test(email)) return send(res, 400, {ok:false, error:'Please enter a valid email address.'});
       if (!branch) return send(res, 400, {ok:false, error:'Please choose a branch.'});
       if (type === 'Delivery' && address.length < 6) return send(res, 400, {ok:false, error:'Please enter your delivery address.'});
+      if (type === 'Delivery') {
+        if (!/^\d{6}$/.test(pincode)) return send(res, 400, {ok:false, error:'Please enter a valid 6-digit delivery PIN code.'});
+        if (!pincodeAllowed(branch, pincode))
+          return send(res, 400, {ok:false, error:`Sorry, PIN code ${pincode} is outside our delivery range for the ${branch} branch. Please choose Pickup instead, or select a closer branch.`});
+      }
 
       let priced;
       try { priced = computeTotal(b.items, type); }
@@ -363,7 +408,7 @@ const server = http.createServer(async (req, res) => {
         notes: {oid, branch},
       });
       db.orders[oid] = {
-        oid, ts: Date.now(), name, phone, email, type, branch, address, notes,
+        oid, ts: Date.now(), name, phone, email, type, branch, address, pincode, notes,
         items: priced.items, sub: priced.sub, discount: priced.discount, total: priced.total,
         pay: 'ONLINE', rzpOrderId: rzpOrder.id, status: 'CREATED', history: [{s:'CREATED', t: Date.now()}],
       };
