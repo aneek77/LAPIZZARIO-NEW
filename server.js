@@ -50,13 +50,13 @@ const BRANCHES = ['Bidhannagar','Chandidas','S.B. More','Prantika','Raniganj','A
    Example:  'Asansol': ['713301','713302','713303'],
    ============================================================ */
 const SERVICEABLE_PINCODES = {
-  'Bidhannagar': [],
-  'Chandidas': [],
-  'S.B. More': [],
-  'Prantika': [],
-  'Raniganj': [],
-  'Asansol': [],
-  'Bolpur': [],
+  'Bidhannagar': ['713212','713206','713214','713216','713210','713211'],
+  'Chandidas':   ['731301','731213'],
+  'S.B. More':   ['713301','713302','713303','713304','713305','713325'],
+  'Prantika':    ['731235'],
+  'Raniganj':    ['713347','713321','713358','713383','713338','713337'],
+  'Asansol':     ['713301','713302','713303','713304','713305','713325'],
+  'Bolpur':      ['731204','731236'],
 };
 function pincodeAllowed(branch, pincode) {
   const list = SERVICEABLE_PINCODES[branch] || [];
