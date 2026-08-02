@@ -839,12 +839,13 @@ function renderStep(){
         </div>
       </div>
       <div class="field"><label for="fBranch">Branch</label>
-        <select id="fBranch">${Object.keys(BRANCHES).map(b=>`<option ${order.branch===b?'selected':''}>${b}</option>`).join('')}</select>
+        <select id="fBranch" onchange="checkPincodeLive()">${Object.keys(BRANCHES).map(b=>`<option ${order.branch===b?'selected':''}>${b}</option>`).join('')}</select>
       </div>
       <div class="field"><label for="fName">Full name</label><input id="fName" value="${order.name}" placeholder="e.g. Rahul Sharma"><div class="err" id="eName">Please enter your name.</div></div>
       <div class="field"><label for="fPhone">Mobile number</label><input id="fPhone" inputmode="numeric" maxlength="10" value="${order.phone}" placeholder="10-digit mobile number"><div class="err" id="ePhone">Enter a valid 10-digit mobile number.</div></div>
       <div class="field"><label for="fEmail">Email address</label><input id="fEmail" type="email" value="${order.email}" placeholder="you@example.com — your order summary is emailed here"><div class="err" id="eEmail">Please enter a valid email address.</div></div>
       <div class="field" id="addrField" style="display:${order.type==='Delivery'?'block':'none'}"><label for="fAddr">Delivery address</label><textarea id="fAddr" rows="3" placeholder="House / street / landmark">${order.address}</textarea><div class="err" id="eAddr">Please enter your delivery address.</div></div>
+      <div class="field" id="pinField" style="display:${order.type==='Delivery'?'block':'none'}"><label for="fPin">Delivery PIN code</label><input id="fPin" inputmode="numeric" maxlength="6" value="${order.pincode||''}" placeholder="6-digit PIN code" oninput="checkPincodeLive()"><div class="err" id="ePin">Please enter a valid 6-digit PIN code.</div><div id="pinRangeMsg" style="display:none;font-size:.78rem;font-weight:700;margin-top:6px;padding:8px 12px;border-radius:8px"></div></div>
       <div class="field"><label for="fNotes">Order notes <span style="font-weight:600;color:var(--ink-soft)">(combo pizza choice, spice level…)</span></label><textarea id="fNotes" rows="2" placeholder="e.g. Meal for Two — Tandoori Chicken pizza">${order.notes}</textarea></div>
       <button class="checkout-btn" onclick="goPay()">Continue to Payment →</button>`;
   }
@@ -874,7 +875,7 @@ function renderStep(){
     const waNum = '91'+BRANCHES[order.branch];
     const payLine = `*Payment:* PAID ONLINE ✅ ${encodeURIComponent(INR(total))} — verified automatically by the payment gateway.`;
     let msg = `🍕 *La Pizzariô — Order ${order.oid}*%0A%0A*Name:* ${order.name}%0A*Phone:* ${order.phone}%0A*Type:* ${order.type}%0A*Branch:* ${order.branch}%0A`;
-    if(order.type==='Delivery') msg += `*Address:* ${encodeURIComponent(order.address)}%0A`;
+    if(order.type==='Delivery') msg += `*Address:* ${encodeURIComponent(order.address)}${order.pincode?' — PIN '+encodeURIComponent(order.pincode):''}%0A`;
     msg += `%0A*Items:*%0A`;
     cart.forEach(c=>{ msg += `• ${encodeURIComponent(c.name)}${c.variant?' ('+encodeURIComponent(c.variant)+')':''}${c.opt?' · '+encodeURIComponent(c.opt):''} × ${c.qty}%0A`; });
     if(order.notes) msg += `%0A*Notes:* ${encodeURIComponent(order.notes)}%0A`;
@@ -900,22 +901,68 @@ function setType(t){
   document.getElementById('segDel').classList.toggle('on',t==='Delivery');
   document.getElementById('segPic').classList.toggle('on',t==='Pickup');
   document.getElementById('addrField').style.display = t==='Delivery'?'block':'none';
+  document.getElementById('pinField').style.display = t==='Delivery'?'block':'none';
   renderCart();
 }
-function goPay(){
+let pinCheckTimer = null;
+async function checkPincodeLive(){
+  const el = document.getElementById('fPin');
+  const msg = document.getElementById('pinRangeMsg');
+  const branch = document.getElementById('fBranch').value;
+  const pin = el.value.trim();
+  clearTimeout(pinCheckTimer);
+  if(!/^\d{6}$/.test(pin)){ msg.style.display='none'; return; }
+  pinCheckTimer = setTimeout(async ()=>{
+    try{
+      const r = await fetch('/api/delivery-check?branch='+encodeURIComponent(branch)+'&pincode='+pin);
+      const d = await r.json();
+      if(!d.ok || !d.valid){ msg.style.display='none'; return; }
+      if(d.deliverable){
+        msg.textContent = '✅ Great — we deliver to this PIN code.';
+        msg.style.background = '#E9F3EA'; msg.style.color = 'var(--basil)';
+      } else {
+        msg.textContent = '⚠️ Sorry, this PIN code is outside our delivery range for ' + branch + '. Try Pickup, or choose a closer branch.';
+        msg.style.background = '#FADCD9'; msg.style.color = 'var(--brick)';
+      }
+      msg.style.display = 'block';
+    }catch(e){ msg.style.display='none'; }
+  }, 350);
+}
+async function goPay(){
   order.branch = document.getElementById('fBranch').value;
   order.name = document.getElementById('fName').value.trim();
   order.phone = document.getElementById('fPhone').value.trim();
   order.email = document.getElementById('fEmail').value.trim();
   order.address = (document.getElementById('fAddr')?document.getElementById('fAddr').value.trim():'');
+  order.pincode = (document.getElementById('fPin')?document.getElementById('fPin').value.trim():'');
   order.notes = document.getElementById('fNotes').value.trim();
   let ok=true;
   const show=(id,bad)=>{document.getElementById(id).style.display=bad?'block':'none'; if(bad)ok=false;};
   show('eName', order.name.length<2);
   show('ePhone', !/^[6-9]\d{9}$/.test(order.phone));
   show('eEmail', !/^\S+@\S+\.\S+$/.test(order.email));
-  if(order.type==='Delivery') show('eAddr', order.address.length<6);
+  if(order.type==='Delivery'){
+    show('eAddr', order.address.length<6);
+    show('ePin', !/^\d{6}$/.test(order.pincode));
+  }
   if(!ok)return;
+  if(order.type==='Delivery'){
+    const btn = document.querySelector('#modalBody .checkout-btn');
+    if(btn){ btn.disabled = true; btn.textContent = 'Checking delivery area…'; }
+    try{
+      const r = await fetch('/api/delivery-check?branch='+encodeURIComponent(order.branch)+'&pincode='+order.pincode);
+      const d = await r.json();
+      if(d.ok && d.valid && !d.deliverable){
+        const msg = document.getElementById('pinRangeMsg');
+        msg.textContent = '⚠️ Sorry, this PIN code is outside our delivery range for ' + order.branch + '. Please choose Pickup, or select a closer branch.';
+        msg.style.background = '#FADCD9'; msg.style.color = 'var(--brick)'; msg.style.display = 'block';
+        document.getElementById('fPin').focus();
+        if(btn){ btn.disabled = false; btn.textContent = 'Continue to Payment →'; }
+        return;
+      }
+    }catch(e){ /* if the check itself fails, don't block the customer — server re-validates anyway */ }
+    if(btn){ btn.disabled = false; btn.textContent = 'Continue to Payment →'; }
+  }
   step=2; renderStep();
 }
 let payMethod = 'QR';
@@ -962,7 +1009,7 @@ async function startQrPay(){
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
           name:order.name, phone:order.phone, email:order.email, type:order.type, branch:order.branch,
-          address:order.address, notes:order.notes,
+          address:order.address, pincode:order.pincode, notes:order.notes,
           items: cart.map(c=>({name:c.name, variant:c.variant, qty:c.qty, opt:c.opt||''}))
         })
       });
@@ -1013,7 +1060,7 @@ async function startPayment(){
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         name:order.name, phone:order.phone, email:order.email, type:order.type, branch:order.branch,
-        address:order.address, notes:order.notes,
+        address:order.address, pincode:order.pincode, notes:order.notes,
         items: cart.map(c=>({name:c.name, variant:c.variant, qty:c.qty, opt:c.opt||''}))
       })
     });
