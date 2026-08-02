@@ -103,6 +103,8 @@ header{position:sticky;top:0;z-index:60;background:var(--basil-deep);color:var(-
 .tag.nonveg{background:#F6DBD8;color:var(--brick)}
 .tag.gold{background:var(--gold-soft);color:#7a5a12}
 .section-sub{color:var(--ink-soft);font-size:.92rem;margin-bottom:18px}
+.topping-hint{font-size:.85rem;font-weight:700;color:var(--brick);background:#FADCD9;border:1px dashed var(--brick);border-radius:10px;padding:11px 15px;margin-bottom:18px}
+.topping-hint.ok{color:var(--basil);background:#E9F3EA;border-color:var(--basil)}
 
 /* ---------- Category pills ---------- */
 .cat-nav{position:sticky;top:64px;z-index:50;background:var(--paper);padding:12px 0;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line)}
@@ -544,7 +546,7 @@ const MENU = [
  {n:'Water', v:true, p:{'500 ml':10,'1 L':20}},
  {n:'Cold Drink', v:true, p:{'250 ml':20,'200 ml':35,'1 L':55}},
 ]},
-{id:'toppings', title:'Extra Toppings', tag:'gold', sub:'Priced per topping — pick the size that matches your pizza (Small · Medium · Large)', items:[
+{id:'toppings', title:'Extra Toppings', tag:'gold', sub:'Priced per topping — pick the size that matches your pizza (Small · Medium · Large)', toppingsHint:true, items:[
  {n:'Onion (Extra Topping)', v:true, p:{'Small':20,'Medium':30,'Large':40}},
  {n:'Capsicum (Extra Topping)', v:true, p:{'Small':20,'Medium':30,'Large':40}},
  {n:'Tomato (Extra Topping)', v:true, p:{'Small':20,'Medium':30,'Large':40}},
@@ -592,6 +594,7 @@ function renderMenu(){
     <section class="section" id="${sec.id}">
       <div class="section-head"><h2>${sec.title}</h2><span class="tag ${sec.tag}">${sec.tag==='veg'?'Pure Veg':sec.tag==='nonveg'?'Non-Veg':'Add-ons & More'}</span></div>
       ${sec.sub?`<p class="section-sub">${sec.sub}</p>`:''}
+      ${sec.toppingsHint?`<div id="toppingHint" class="topping-hint"></div>`:''}
       <div class="menu-grid">
       ${sec.items.map((it,ii)=>{
         const key = si+'-'+ii;
@@ -611,7 +614,7 @@ function renderMenu(){
             <div class="sizes" id="sz-${key}">
               ${variants.map(v=>`<button class="size-btn ${selected[key]===v?'on':''}" onclick="pickSize('${key}','${v.replace(/'/g,"\\'")}')">${v||'Regular'}<b>${INR(it.p[v])}</b></button>`).join('')}
             </div>
-            <button class="add-btn" id="add-${key}" onclick="addItem('${key}')">Add +</button>
+            <button class="add-btn" id="add-${key}" onclick="${sec.id==='toppings'?`addTopping('${key}')`:`addItem('${key}')`}">Add +</button>
           </div>
         </article>`;
       }).join('')}
@@ -632,12 +635,58 @@ function pickSize(key,v){
   // simpler reliable re-render of just this size group:
   box.innerHTML = Object.keys(it.p).map(vv=>`<button class="size-btn ${selected[key]===vv?'on':''}" onclick="pickSize('${key}','${vv.replace(/'/g,"\\'")}')">${vv||'Regular'}<b>${INR(it.p[vv])}</b></button>`).join('');
 }
+const PIZZA_SECTIONS = ['veg-pizzas','nonveg-pizzas','stuffed-veg','stuffed-nonveg'];
 function addItem(key){
   const it = findItem(key);
   const v = selected[key];
-  pushToCart(it.n, v, it.p[v], it.v, !!it.pz);
+  const si = Number(key.split('-')[0]);
+  const isPizza = PIZZA_SECTIONS.includes(MENU[si].id);
+  pushToCart(it.n, v, it.p[v], it.v, !!it.pz, '', isPizza);
   const btn = document.getElementById('add-'+key);
   if(btn){btn.classList.add('added');btn.textContent='Added ✓';setTimeout(()=>{btn.classList.remove('added');btn.textContent='Add +';},900);}
+}
+/* ---------- Toppings: only addable once a pizza is in the cart, tied to a specific pizza ---------- */
+function pizzasInCart(){ return cart.filter(c=>c.isPizza); }
+let pendingTopping = null;
+function addTopping(key){
+  const it = findItem(key);
+  const v = selected[key];
+  const pizzas = pizzasInCart();
+  if(pizzas.length===0){
+    toast('🍕 Add a pizza to your cart first — toppings customize a specific pizza');
+    return;
+  }
+  const finishAdd = (p)=>{
+    pushToCart(it.n, v, it.p[v], it.v, false, 'For: '+p.name+(p.variant?' ('+p.variant+')':''), false);
+    const btn = document.getElementById('add-'+key);
+    if(btn){btn.classList.add('added');btn.textContent='Added ✓';setTimeout(()=>{btn.classList.remove('added');btn.textContent='Add +';},900);}
+  };
+  if(pizzas.length===1){ finishAdd(pizzas[0]); return; }
+  pendingTopping = {finishAdd, pizzas};
+  document.querySelector('#chooseScrim .modal-head h3').textContent = '🍕 Which pizza is this for?';
+  document.getElementById('chooseBody').innerHTML = `
+    <div class="choice-sub">Add <b>${it.n}</b>${v?' ('+v+')':''} · ${INR(it.p[v])} to which pizza?</div>
+    <div class="choice-list">
+      ${pizzas.map((p,i)=>`<button class="choice-btn" onclick="pickToppingPizza(${i})"><span class="fssai ${p.veg?'veg':'nonveg'}" style="margin:0"></span> ${p.name}${p.variant?' ('+p.variant+')':''} <span class="go">Add →</span></button>`).join('')}
+    </div>`;
+  document.getElementById('chooseScrim').classList.add('show');
+}
+function pickToppingPizza(i){
+  const pt = pendingTopping; if(!pt) return;
+  closeChoice();
+  pt.finishAdd(pt.pizzas[i]);
+}
+function updateToppingHint(){
+  const el = document.getElementById('toppingHint');
+  if(!el) return;
+  const pizzas = pizzasInCart();
+  if(pizzas.length===0){
+    el.innerHTML = '🍕 <b>Add a pizza to your cart first</b> — toppings customize a specific pizza, so they unlock once you\'ve chosen one.';
+    el.classList.remove('ok');
+  } else {
+    el.innerHTML = '✅ Toppings unlocked — customizing: ' + pizzas.map(p=>`<b>${p.name}${p.variant?' ('+p.variant+')':''}</b>`).join(', ');
+    el.classList.add('ok');
+  }
 }
 /* Combo choices — edit these lists to change what customers can pick */
 const COMBO_CHOICES = {
@@ -681,13 +730,13 @@ function pickComboOpt(p){
   pushToCart(c.name,'',c.price,c.veg,false,p);
   toast(c.name+' — '+p+' added to cart');
 }
-function closeChoice(){ document.getElementById('chooseScrim').classList.remove('show'); pendingCombo=null; }
-function pushToCart(name,variant,price,veg,pz,opt){
+function closeChoice(){ document.getElementById('chooseScrim').classList.remove('show'); pendingCombo=null; pendingTopping=null; }
+function pushToCart(name,variant,price,veg,pz,opt,isPizza){
   opt = opt||'';
   const ck = name+'|'+variant+'|'+opt;
   const ex = cart.find(c=>c.key===ck);
   if(ex) ex.qty++;
-  else cart.push({key:ck,name,variant,price,qty:1,veg,pz,opt});
+  else cart.push({key:ck,name,variant,price,qty:1,veg,pz,opt,isPizza:!!isPizza});
   renderCart();
 }
 function changeQty(ck,delta){
@@ -763,6 +812,7 @@ function renderCart(){
   document.getElementById('navCount').textContent = n;
   document.getElementById('mobBarInfo').innerHTML = `<b>${n} item${n!==1?'s':''}</b> · ${INR(grandTotal())}`;
   document.getElementById('mobBar').classList.toggle('show', n>0);
+  updateToppingHint();
 }
 
 /* ---------- Mobile drawer ---------- */
