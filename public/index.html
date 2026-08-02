@@ -538,11 +538,11 @@ const MENU = [
  {n:'Paneer Burger', v:true, p:{'':90}},
  {n:'Chicken Burger', v:false, p:{'':90}},
 ]},
-{id:'desserts', title:'Desserts', tag:'gold', items:[
+{id:'desserts', title:'Desserts', tag:'gold', sub:'Available as an add-on with a pizza order', gateHint:true, items:[
  {n:'Chocolava Cake', v:true, p:{'':60}},
  {n:'Brownie', v:true, p:{'':60}},
 ]},
-{id:'beverages', title:'Beverages', tag:'gold', items:[
+{id:'beverages', title:'Beverages', tag:'gold', sub:'Available as an add-on with a pizza order', gateHint:true, items:[
  {n:'Water', v:true, p:{'500 ml':10,'1 L':20}},
  {n:'Cold Drink', v:true, p:{'250 ml':20,'200 ml':35,'1 L':55}},
 ]},
@@ -595,6 +595,7 @@ function renderMenu(){
       <div class="section-head"><h2>${sec.title}</h2><span class="tag ${sec.tag}">${sec.tag==='veg'?'Pure Veg':sec.tag==='nonveg'?'Non-Veg':'Add-ons & More'}</span></div>
       ${sec.sub?`<p class="section-sub">${sec.sub}</p>`:''}
       ${sec.toppingsHint?`<div id="toppingHint" class="topping-hint"></div>`:''}
+      ${sec.gateHint?`<div id="gateHint-${sec.id}" class="topping-hint gate-hint"></div>`:''}
       <div class="menu-grid">
       ${sec.items.map((it,ii)=>{
         const key = si+'-'+ii;
@@ -636,11 +637,17 @@ function pickSize(key,v){
   box.innerHTML = Object.keys(it.p).map(vv=>`<button class="size-btn ${selected[key]===vv?'on':''}" onclick="pickSize('${key}','${vv.replace(/'/g,"\\'")}')">${vv||'Regular'}<b>${INR(it.p[vv])}</b></button>`).join('');
 }
 const PIZZA_SECTIONS = ['veg-pizzas','nonveg-pizzas','stuffed-veg','stuffed-nonveg'];
+const GATED_SECTIONS = MENU.filter(s=>s.gateHint).map(s=>s.id);   // sections that require a pizza already in the cart
 function addItem(key){
   const it = findItem(key);
   const v = selected[key];
   const si = Number(key.split('-')[0]);
-  const isPizza = PIZZA_SECTIONS.includes(MENU[si].id);
+  const sec = MENU[si];
+  if(GATED_SECTIONS.includes(sec.id) && cart.filter(c=>c.isPizza).length===0){
+    toast('🍕 Add a pizza to your cart first — '+sec.title.toLowerCase()+' come as an add-on to a pizza order');
+    return;
+  }
+  const isPizza = PIZZA_SECTIONS.includes(sec.id);
   pushToCart(it.n, v, it.p[v], it.v, !!it.pz, '', isPizza);
   const btn = document.getElementById('add-'+key);
   if(btn){btn.classList.add('added');btn.textContent='Added ✓';setTimeout(()=>{btn.classList.remove('added');btn.textContent='Add +';},900);}
@@ -688,6 +695,20 @@ function updateToppingHint(){
     el.classList.add('ok');
   }
 }
+function updateGateHints(){
+  const has = pizzasInCart().length>0;
+  GATED_SECTIONS.forEach(id=>{
+    const el = document.getElementById('gateHint-'+id);
+    if(!el) return;
+    if(has){
+      el.innerHTML = '✅ Unlocked — added alongside your pizza order.';
+      el.classList.add('ok');
+    } else {
+      el.innerHTML = '🍕 <b>Add a pizza to your cart first</b> — these come as an add-on to a pizza order.';
+      el.classList.remove('ok');
+    }
+  });
+}
 /* Combo choices — edit these lists to change what customers can pick */
 const COMBO_CHOICES = {
   pizza: {
@@ -713,7 +734,7 @@ function addCombo(name,price,veg,kind){
   toast(name+' added to cart');
 }
 function openChoice(name,price,veg,kind){
-  pendingCombo = {name,price,veg};
+  pendingCombo = {name,price,veg,kind};
   const cfg = COMBO_CHOICES[kind];
   const list = veg ? cfg.veg : cfg.nonveg;
   document.querySelector('#chooseScrim .modal-head h3').textContent = '🍽️ ' + cfg.title;
@@ -727,7 +748,7 @@ function openChoice(name,price,veg,kind){
 function pickComboOpt(p){
   const c = pendingCombo; if(!c) return;
   closeChoice();
-  pushToCart(c.name,'',c.price,c.veg,false,p);
+  pushToCart(c.name,'',c.price,c.veg,false,p,c.kind==='pizza');
   toast(c.name+' — '+p+' added to cart');
 }
 function closeChoice(){ document.getElementById('chooseScrim').classList.remove('show'); pendingCombo=null; pendingTopping=null; }
@@ -813,6 +834,7 @@ function renderCart(){
   document.getElementById('mobBarInfo').innerHTML = `<b>${n} item${n!==1?'s':''}</b> · ${INR(grandTotal())}`;
   document.getElementById('mobBar').classList.toggle('show', n>0);
   updateToppingHint();
+  updateGateHints();
 }
 
 /* ---------- Mobile drawer ---------- */
