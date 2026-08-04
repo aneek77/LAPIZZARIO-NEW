@@ -4,9 +4,40 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>La Pizzariô — The Best Pizza In Town</title>
+<meta name="description" content="Hot, fresh & mouth-watering pizza at unbelievable prices. Order online for free home delivery across 7 branches in West Bengal — pay by UPI, card or QR. Cheese loaded in every bite!">
+<link rel="canonical" href="https://lapizzario.com/">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍕</text></svg>">
+
+<!-- Social share preview (WhatsApp, Instagram, Facebook, iMessage) -->
+<meta property="og:type" content="restaurant.menu">
+<meta property="og:title" content="La Pizzariô — The Best Pizza In Town">
+<meta property="og:description" content="Hot, fresh & mouth-watering pizza at unbelievable prices. Free home delivery across 7 branches — order online now!">
+<meta property="og:image" content="https://lapizzario.com/images/about-chef.jpg">
+<meta property="og:url" content="https://lapizzario.com/">
+<meta property="og:site_name" content="La Pizzariô">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="La Pizzariô — The Best Pizza In Town">
+<meta name="twitter:description" content="Hot, fresh & mouth-watering pizza at unbelievable prices. Free home delivery — order online now!">
+<meta name="twitter:image" content="https://lapizzario.com/images/about-chef.jpg">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,600&family=Karla:wght@400;500;600;700;800&display=swap&family=Baumans&display=swap" rel="stylesheet">
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  "name": "La Pizzariô",
+  "url": "https://lapizzario.com/",
+  "servesCuisine": "Pizza",
+  "priceRange": "₹₹",
+  "acceptsReservations": "false",
+  "menu": "https://lapizzario.com/#menu",
+  "telephone": "+919126996094",
+  "areaServed": ["Bidhannagar","Chandidas","S.B. More","Prantika","Raniganj","Asansol","Bolpur"],
+  "address": { "@type": "PostalAddress", "addressRegion": "West Bengal", "addressCountry": "IN" }
+}
+</script>
 <style>
 :root{
   --paper:#F8EFDC;
@@ -186,11 +217,14 @@ header{position:sticky;top:0;z-index:60;background:var(--basil-deep);color:var(-
 .cart-line .nm small{display:block;color:var(--ink-soft);font-weight:600;font-size:.72rem}
 .qty{display:flex;align-items:center;gap:2px;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:2px}
 .qty button{width:24px;height:24px;border-radius:50%;font-weight:900;font-size:.9rem;color:var(--basil)}
+@media(max-width:640px){.qty button{width:32px;height:32px;font-size:1.05rem}}
 .qty button:hover{background:#E9F3EA}
 .qty span{min-width:20px;text-align:center;font-weight:800;font-size:.83rem}
 .cart-line .pr{font-weight:800;font-size:.86rem;min-width:56px;text-align:right}
 .cart-foot{border-top:2px solid var(--line);padding:14px 16px;background:var(--paper)}
-.tot-row{display:flex;justify-content:space-between;font-size:.86rem;font-weight:600;color:var(--ink-soft);padding:2px 0}
+.tot-row{display:flex;justify-content:space-between;gap:10px;font-size:.86rem;font-weight:600;color:var(--ink-soft);padding:2px 0}
+.tot-row>span:first-child{min-width:0;overflow-wrap:break-word}
+.tot-row>span:last-child{flex:none;white-space:nowrap}
 .tot-row.grand{font-size:1.08rem;font-weight:900;color:var(--ink);padding-top:8px}
 .tot-row.save{color:var(--basil);font-weight:800}
 .bogo-hint{background:#FBF1D8;border:1px dashed var(--gold);border-radius:9px;padding:8px 10px;font-size:.73rem;color:#7a5a12;margin-top:8px;font-weight:600}
@@ -239,7 +273,7 @@ header{position:sticky;top:0;z-index:60;background:var(--basil-deep);color:var(-
 #qrbox img,#qrbox canvas{display:block}
 .pay-amt{font-family:'Fraunces',serif;font-weight:900;font-size:2rem;color:var(--basil)}
 .pay-note{font-size:.78rem;color:var(--ink-soft);margin:8px 0 14px}
-.upi-apps{display:flex;justify-content:center;gap:10px;font-size:.72rem;font-weight:700;color:var(--ink-soft);margin-bottom:14px}
+.upi-apps{display:flex;justify-content:center;flex-wrap:wrap;row-gap:4px;gap:10px;font-size:.72rem;font-weight:700;color:var(--ink-soft);margin-bottom:14px}
 .btn-block{display:flex;width:100%;justify-content:center;margin-bottom:10px}
 .btn-upi{background:var(--basil);color:#fff;box-shadow:0 4px 0 var(--basil-deep)}
 .btn-wa{background:#1FA855;color:#fff;box-shadow:0 4px 0 #14713a}

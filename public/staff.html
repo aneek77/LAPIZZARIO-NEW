@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>La Pizzariô — Staff Dashboard</title>
+<meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,900&family=Karla:wght@400;500;600;700;800&display=swap&family=Baumans&display=swap" rel="stylesheet">
 <style>
@@ -78,7 +79,7 @@ header{position:sticky;top:0;z-index:50;background:var(--basil-deep);color:var(-
 .tab.on .n{background:var(--gold);color:var(--ink)}
 
 /* Order cards */
-.orders{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.orders{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(330px,100%),1fr));gap:14px}
 .card{background:var(--cream);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
 .card-head{padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px dashed var(--line)}
 .oid{font-family:'Fraunces',serif;font-weight:900;font-size:1.02rem}
@@ -94,6 +95,8 @@ header{position:sticky;top:0;z-index:50;background:var(--basil-deep);color:var(-
 .meta{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--ink-soft);font-weight:700;font-size:.78rem;margin-bottom:9px}
 .items{border-top:1px dashed var(--line);padding-top:8px;margin-top:2px}
 .it-row{display:flex;justify-content:space-between;gap:10px;padding:2px 0}
+.it-row>span:first-child{min-width:0;overflow-wrap:break-word}
+.it-row>span:last-child{flex:none;white-space:nowrap}
 .it-row span:last-child{font-weight:800;white-space:nowrap}
 .tot{display:flex;justify-content:space-between;font-weight:900;font-size:.98rem;border-top:2px solid var(--line);margin-top:8px;padding-top:8px}
 .save{color:var(--basil);font-weight:800}
@@ -123,6 +126,7 @@ header{position:sticky;top:0;z-index:50;background:var(--basil-deep);color:var(-
 .drv-x{color:var(--brick);font-weight:900;font-size:1rem;padding:4px 9px;border-radius:8px;cursor:pointer}
 .drv-x:hover{background:#FADCD9}
 .drv-form{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-top:10px}
+@media(max-width:480px){.drv-form{grid-template-columns:1fr}.drv-form button{padding:11px}}
 .drv-form input{border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;font-family:inherit;font-size:.86rem;background:#fff;min-width:0}
 .drv-form button{background:var(--basil);color:#fff;font-weight:900;border-radius:10px;padding:0 16px}
 .drv-empty{color:var(--ink-soft);font-size:.83rem;text-align:center;padding:12px 0}

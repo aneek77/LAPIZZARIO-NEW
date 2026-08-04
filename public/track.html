@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Track Your Order — La Pizzariô</title>
+<meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Karla:wght@400;500;600;700;800&display=swap&family=Baumans&display=swap" rel="stylesheet">
 <style>
@@ -55,6 +56,8 @@ h1{font-family:'Fraunces',serif;font-weight:900;font-size:1.45rem;margin-bottom:
 /* summary */
 h2{font-family:'Fraunces',serif;font-weight:900;font-size:1.1rem;margin-bottom:10px}
 .it-row{display:flex;justify-content:space-between;gap:10px;font-size:.88rem;padding:6px 0;border-bottom:1px dashed var(--line)}
+.it-row>span:first-child{min-width:0;overflow-wrap:break-word}
+.it-row>span:last-child{flex:none;white-space:nowrap}
 .it-row span:last-child{font-weight:800;white-space:nowrap}
 .tot{display:flex;justify-content:space-between;font-weight:900;font-size:1.02rem;padding-top:10px}
 .save{color:var(--basil);font-weight:800}
