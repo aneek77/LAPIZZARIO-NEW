@@ -82,6 +82,17 @@ header{position:sticky;top:0;z-index:60;background:var(--basil-deep);color:var(-
 .nav-links a:hover{background:rgba(255,255,255,.14)}
 .nav-cart-btn{display:flex;align-items:center;gap:8px;background:var(--brick);color:#fff;font-weight:800;padding:9px 16px;border-radius:999px;font-size:.88rem;box-shadow:0 3px 0 var(--brick-deep)}
 .nav-cart-btn:active{transform:translateY(2px);box-shadow:none}
+.hamburger{display:none;background:rgba(255,255,255,.14);border:none;color:var(--cream);font-size:1.25rem;width:36px;height:36px;border-radius:9px;line-height:1;cursor:pointer}
+@media(max-width:1023px){
+  .nav{padding:8px 14px;gap:8px}
+  .logo{font-size:1.28rem}
+  .logo small{display:none}
+  .hamburger{display:block;margin-left:auto;order:2}
+  .nav-cart-btn{order:3;padding:7px 12px;font-size:.8rem}
+  .nav-links{display:none;order:4;width:100%;margin-left:0;flex-direction:column;gap:1px;background:rgba(0,0,0,.14);border-radius:10px;margin-top:4px;overflow:hidden}
+  .nav-links.show{display:flex}
+  .nav-links a{padding:12px 14px;border-radius:0}
+}
 .count-pill{background:var(--gold);color:#241F16;border-radius:999px;min-width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:.75rem;padding:0 6px}
 
 /* ---------- Hero ---------- */
@@ -179,6 +190,13 @@ header{position:sticky;top:0;z-index:60;background:var(--basil-deep);color:var(-
 .size-btn.on{border-color:var(--basil);background:#E9F3EA;color:var(--basil)}
 .size-btn.on b{color:var(--basil)}
 .add-btn{margin-left:auto;background:var(--basil);color:#fff;font-weight:800;font-size:.83rem;padding:9px 18px;border-radius:999px;box-shadow:0 3px 0 var(--basil-deep)}
+.add-area{margin-left:auto}
+.qty-stepper{display:flex;align-items:center;background:var(--basil);border-radius:999px;box-shadow:0 3px 0 var(--basil-deep);overflow:hidden}
+.qty-stepper button{width:34px;height:34px;color:#fff;font-weight:900;font-size:1.15rem;line-height:1;display:flex;align-items:center;justify-content:center}
+.qty-stepper button:active{background:rgba(0,0,0,.18)}
+.qty-stepper span{min-width:26px;text-align:center;color:#fff;font-weight:900;font-size:.92rem}
+.addon-prompt{display:block;text-align:center;text-decoration:none;font-size:.78rem;font-weight:800;color:var(--basil);background:#E9F3EA;border:1px dashed var(--basil);border-radius:9px;padding:8px 10px;margin-top:2px;animation:addonPop .25s ease}
+@keyframes addonPop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 .add-btn:hover{filter:brightness(1.08)}
 .add-btn:active{transform:translateY(2px);box-shadow:none}
 .add-btn.added{background:var(--gold);color:#241F16;box-shadow:0 3px 0 #9a7420}
@@ -312,10 +330,11 @@ footer{background:var(--basil-deep);color:var(--cream);margin-top:20px}
   <div class="awning" aria-hidden="true"></div>
   <nav class="nav">
     <div class="logo">La <em>Pizzariô</em><small>The Best Pizza In Town</small></div>
-    <div class="nav-links">
-      <a href="#deals">Best Deals</a>
-      <a href="#menu">Menu</a>
-      <a href="#branches">Branches</a>
+    <button class="hamburger" id="hamburgerBtn" onclick="toggleMobileNav()" aria-label="Menu" aria-expanded="false">☰</button>
+    <div class="nav-links" id="navLinks">
+      <a href="#deals" onclick="closeMobileNav()">Best Deals</a>
+      <a href="#menu" onclick="closeMobileNav()">Menu</a>
+      <a href="#branches" onclick="closeMobileNav()">Branches</a>
       <a href="/about">About</a>
       <a href="/track">🔎 Track Order</a>
     </div>
@@ -649,12 +668,15 @@ function renderMenu(){
             <div class="sizes" id="sz-${key}">
               ${variants.map(v=>`<button class="size-btn ${selected[key]===v?'on':''}" onclick="pickSize('${key}','${v.replace(/'/g,"\\'")}')">${v||'Regular'}<b>${INR(it.p[v])}</b></button>`).join('')}
             </div>
-            <button class="add-btn" id="add-${key}" onclick="${sec.id==='toppings'?`addTopping('${key}')`:`addItem('${key}')`}">Add +</button>
+            ${sec.id==='toppings'
+              ? `<button class="add-btn" id="add-${key}" onclick="addTopping('${key}')">Add +</button>`
+              : `<div class="add-area" id="addarea-${key}"></div>`}
           </div>
         </article>`;
       }).join('')}
       </div>
     </section>`).join('');
+  updateAllAddAreas();
 }
 function findItem(key){
   const [si,ii] = key.split('-').map(Number);
@@ -669,9 +691,52 @@ function pickSize(key,v){
   });
   // simpler reliable re-render of just this size group:
   box.innerHTML = Object.keys(it.p).map(vv=>`<button class="size-btn ${selected[key]===vv?'on':''}" onclick="pickSize('${key}','${vv.replace(/'/g,"\\'")}')">${vv||'Regular'}<b>${INR(it.p[vv])}</b></button>`).join('');
+  renderAddArea(key);
 }
 const PIZZA_SECTIONS = ['veg-pizzas','nonveg-pizzas','stuffed-veg','stuffed-nonveg'];
 const GATED_SECTIONS = MENU.filter(s=>s.gateHint).map(s=>s.id);   // sections that require a pizza already in the cart
+function toggleMobileNav(){
+  const nav = document.getElementById('navLinks');
+  const btn = document.getElementById('hamburgerBtn');
+  const open = nav.classList.toggle('show');
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  btn.textContent = open ? '✕' : '☰';
+}
+function closeMobileNav(){
+  document.getElementById('navLinks').classList.remove('show');
+  const btn = document.getElementById('hamburgerBtn');
+  btn.setAttribute('aria-expanded','false');
+  btn.textContent = '☰';
+}
+function itemCartKey(key){
+  const it = findItem(key);
+  const v = selected[key];
+  return it.n+'|'+v+'|'+'';
+}
+function renderAddArea(key){
+  const el = document.getElementById('addarea-'+key);
+  if(!el) return;
+  const line = cart.find(c=>c.key===itemCartKey(key));
+  if(line && line.qty>0){
+    el.innerHTML = `<div class="qty-stepper">
+      <button onclick="stepItem('${key}',-1)" aria-label="Decrease quantity">−</button>
+      <span>${line.qty}</span>
+      <button onclick="stepItem('${key}',1)" aria-label="Increase quantity">+</button>
+    </div>`;
+  } else {
+    el.innerHTML = `<button class="add-btn" onclick="addItem('${key}')">Add +</button>`;
+  }
+}
+function updateAllAddAreas(){
+  MENU.forEach((sec,si)=>{
+    if(sec.id==='toppings') return;
+    sec.items.forEach((it,ii)=> renderAddArea(si+'-'+ii));
+  });
+}
+function stepItem(key, delta){
+  if(delta>0){ addItem(key); return; }
+  changeQty(itemCartKey(key), -1);
+}
 function addItem(key){
   const it = findItem(key);
   const v = selected[key];
@@ -683,8 +748,29 @@ function addItem(key){
   }
   const isPizza = PIZZA_SECTIONS.includes(sec.id);
   pushToCart(it.n, v, it.p[v], it.v, !!it.pz, '', isPizza);
-  const btn = document.getElementById('add-'+key);
-  if(btn){btn.classList.add('added');btn.textContent='Added ✓';setTimeout(()=>{btn.classList.remove('added');btn.textContent='Add +';},900);}
+  if(isPizza){
+    const line = cart.find(c=>c.key===itemCartKey(key));
+    if(line && line.qty===1) offerAddonsPrompt(key);
+  }
+}
+/* ---------- "Add toppings for this pizza?" prompt (shown once per fresh pizza add) ---------- */
+let preferredToppingPizza = null;
+function offerAddonsPrompt(key){
+  const it = findItem(key);
+  const v = selected[key];
+  preferredToppingPizza = {name: it.n, variant: v};
+  const areaEl = document.getElementById('addarea-'+key);
+  const card = areaEl ? areaEl.closest('.item') : null;
+  if(!card) return;
+  const existing = card.querySelector('.addon-prompt');
+  if(existing) existing.remove();
+  const p = document.createElement('a');
+  p.href = '#toppings';
+  p.className = 'addon-prompt';
+  p.textContent = '🧀 Add toppings for this pizza →';
+  p.addEventListener('click', ()=>{ p.remove(); });
+  card.appendChild(p);
+  setTimeout(()=>{ if(p.isConnected) p.remove(); }, 8000);
 }
 /* ---------- Toppings: only addable once a pizza is in the cart, tied to a specific pizza ---------- */
 function pizzasInCart(){ return cart.filter(c=>c.isPizza); }
@@ -695,13 +781,19 @@ function addTopping(key){
   const pizzas = pizzasInCart();
   if(pizzas.length===0){
     toast('🍕 Add a pizza to your cart first — toppings customize a specific pizza');
+    preferredToppingPizza = null;
     return;
   }
   const finishAdd = (p)=>{
     pushToCart(it.n, v, it.p[v], it.v, false, 'For: '+p.name+(p.variant?' ('+p.variant+')':''), false);
+    preferredToppingPizza = {name:p.name, variant:p.variant};
     const btn = document.getElementById('add-'+key);
     if(btn){btn.classList.add('added');btn.textContent='Added ✓';setTimeout(()=>{btn.classList.remove('added');btn.textContent='Add +';},900);}
   };
+  if(preferredToppingPizza){
+    const match = pizzas.find(p=>p.name===preferredToppingPizza.name && p.variant===preferredToppingPizza.variant);
+    if(match){ finishAdd(match); return; }
+  }
   if(pizzas.length===1){ finishAdd(pizzas[0]); return; }
   pendingTopping = {finishAdd, pizzas};
   document.querySelector('#chooseScrim .modal-head h3').textContent = '🍕 Which pizza is this for?';
@@ -869,6 +961,7 @@ function renderCart(){
   document.getElementById('mobBar').classList.toggle('show', n>0);
   updateToppingHint();
   updateGateHints();
+  updateAllAddAreas();
 }
 
 /* ---------- Mobile drawer ---------- */
