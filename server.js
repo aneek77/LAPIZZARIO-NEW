@@ -326,7 +326,7 @@ function readBody(req) {
     req.on('error', reject);
   });
 }
-const MIME = {'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.ico':'image/x-icon'};
+const MIME = {'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml','.ico':'image/x-icon','.txt':'text/plain; charset=utf-8','.xml':'application/xml; charset=utf-8'};
 function serveStatic(res, file) {
   const full = path.join(__dirname, 'public', file);
   if (!full.startsWith(path.join(__dirname, 'public'))) { res.writeHead(403); return res.end(); }
@@ -354,6 +354,8 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && (p === '/track' || p.startsWith('/track/'))) return serveStatic(res, 'track.html');
     if (req.method === 'GET' && (p === '/about' || p === '/about.html')) return serveStatic(res, 'about.html');
     if (req.method === 'GET' && p.startsWith('/images/')) return serveStatic(res, p.slice(1));
+    if (req.method === 'GET' && p === '/robots.txt') return serveStatic(res, 'robots.txt');
+    if (req.method === 'GET' && p === '/sitemap.xml') return serveStatic(res, 'sitemap.xml');
 
     /* ---------- health ---------- */
     if (req.method === 'GET' && p === '/api/health') {
@@ -456,7 +458,7 @@ const server = http.createServer(async (req, res) => {
       if (o.status === 'CREATED' && o.qrId) {
         try {
           const pays = await razorpay('/v1/qr_codes/' + encodeURIComponent(o.qrId) + '/payments', 'GET');
-          const hit = (pays.items || []).find(x => x.status === 'captured' && Number(x.amount) === o.total * 100);
+          const hit = (pays.items || []).find(x => (x.status === 'captured' || x.status === 'authorized') && Number(x.amount) === o.total * 100);
           if (hit) {
             markPaid(o, hit.id, 'upi-qr');
             if (!o.emailSent) {
