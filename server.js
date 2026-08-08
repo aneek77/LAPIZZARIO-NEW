@@ -237,6 +237,30 @@ function newOid() {
    the BOGO offer — whichever discount is bigger for that order
    wins; never both. Set enabled:false to switch off entirely.
    ============================================================ */
+/* ============================================================
+   ORDER HOURS — online ordering only accepted during these times
+   ------------------------------------------------------------
+   Times are in IST (India Standard Time), computed explicitly so
+   this works correctly no matter what timezone the server itself
+   runs in (e.g. Render's servers run in UTC).
+   Change these four numbers to adjust opening hours.
+   ============================================================ */
+const ORDER_HOURS = { openHour: 13, openMinute: 0, closeHour: 21, closeMinute: 30 }; // 1:00 PM – 9:30 PM
+function nowIST() {
+  return new Date(Date.now() + 5.5 * 60 * 60 * 1000);
+}
+function isOrderingOpen() {
+  const d = nowIST();
+  const nowMin = d.getUTCHours() * 60 + d.getUTCMinutes();
+  const openMin = ORDER_HOURS.openHour * 60 + ORDER_HOURS.openMinute;
+  const closeMin = ORDER_HOURS.closeHour * 60 + ORDER_HOURS.closeMinute;
+  return nowMin >= openMin && nowMin < closeMin;
+}
+function orderHoursLabel() {
+  const fmt = (h, m) => { const ap = h >= 12 ? 'PM' : 'AM'; const h12 = ((h + 11) % 12) + 1; return h12 + (m ? ':' + String(m).padStart(2,'0') : ':00') + ' ' + ap; };
+  return fmt(ORDER_HOURS.openHour, ORDER_HOURS.openMinute) + ' – ' + fmt(ORDER_HOURS.closeHour, ORDER_HOURS.closeMinute);
+}
+
 const FIRST_ORDER_DISCOUNT = { enabled: true, percent: 15, maxOff: null };  // maxOff: null = no cap, true 15% every time
 function isFirstOrder(phone) {
   return !Object.values(db.orders).some(o =>
@@ -421,6 +445,10 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, {ok:true, gateway: !!(CFG.RAZORPAY_KEY_ID && CFG.RAZORPAY_KEY_SECRET), webhook: !!CFG.RAZORPAY_WEBHOOK_SECRET});
     }
 
+    if (req.method === 'GET' && p === '/api/store-status') {
+      return send(res, 200, {ok:true, open: isOrderingOpen(), hours: orderHoursLabel()});
+    }
+
     /* ---------- live delivery-range check (instant feedback while typing) ---------- */
     if (req.method === 'GET' && p === '/api/delivery-check') {
       const branch = url.searchParams.get('branch') || '';
@@ -447,6 +475,8 @@ const server = http.createServer(async (req, res) => {
 
     /* ---------- create order (customer) ---------- */
     if (req.method === 'POST' && p === '/api/orders') {
+      if (!isOrderingOpen())
+        return send(res, 400, {ok:false, error:`Sorry, we're closed for online orders right now. Ordering hours: ${orderHoursLabel()} IST. Please come back then!`});
       const b = JSON.parse((await readBody(req)).toString() || '{}');
       const name = String(b.name || '').trim().slice(0, 80);
       const phone = String(b.phone || '').trim();
