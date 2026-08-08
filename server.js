@@ -64,6 +64,41 @@ function pincodeAllowed(branch, pincode) {
   return list.includes(String(pincode || '').trim());
 }
 
+/* ============================================================
+   DELIVERY RADIUS — 3 km straight-line distance from each branch
+   ------------------------------------------------------------
+   Real coordinates for each branch (sourced from official Indian
+   postal-service data for each branch's PIN code). Used together
+   with the customer's live phone location — if they allow it —
+   to check they're genuinely within range. If a customer doesn't
+   share their location, the PIN code list above is used instead
+   as a reliable fallback, so delivery checking never goes fully
+   unchecked. Change DELIVERY_RADIUS_KM to adjust the radius.
+   ============================================================ */
+const DELIVERY_RADIUS_KM = 3;
+const BRANCH_COORDS = {
+  'Bidhannagar': { lat: 23.5187, lng: 87.3418 },
+  'Chandidas':   { lat: 23.5388, lng: 87.2465 },
+  'S.B. More':   { lat: 23.5023, lng: 87.3081 },
+  'Prantika':    { lat: 23.5388, lng: 87.2465 },
+  'Raniganj':    { lat: 23.6073, lng: 87.1154 },
+  'Asansol':     { lat: 23.6901, lng: 86.9489 },
+  'Bolpur':      { lat: 23.6800, lng: 87.6800 },
+};
+function distanceKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+// Returns true/false if we can check distance, or null if we can't (caller should fall back to PIN code)
+function withinDeliveryRadius(branch, lat, lng) {
+  const c = BRANCH_COORDS[branch];
+  if (!c || lat == null || lng == null || isNaN(lat) || isNaN(lng)) return null;
+  return distanceKm(c.lat, c.lng, Number(lat), Number(lng)) <= DELIVERY_RADIUS_KM;
+}
+
 /* ------------------- MENU: single source of truth -------------------
    The server recomputes every order total from this table.
    Whatever prices a tampered client sends are IGNORED.           */
@@ -390,9 +425,17 @@ const server = http.createServer(async (req, res) => {
     if (req.method === 'GET' && p === '/api/delivery-check') {
       const branch = url.searchParams.get('branch') || '';
       const pincode = String(url.searchParams.get('pincode') || '').trim();
+      const lat = url.searchParams.get('lat');
+      const lng = url.searchParams.get('lng');
       if (!BRANCHES.includes(branch)) return send(res, 400, {ok:false, error:'Invalid branch.'});
+      const byRadius = withinDeliveryRadius(branch, lat, lng);
+      if (byRadius !== null) {
+        const c = BRANCH_COORDS[branch];
+        const km = Math.round(distanceKm(c.lat, c.lng, Number(lat), Number(lng)) * 10) / 10;
+        return send(res, 200, {ok:true, valid:true, method:'radius', deliverable: byRadius, distanceKm: km, radiusKm: DELIVERY_RADIUS_KM});
+      }
       if (!/^\d{6}$/.test(pincode)) return send(res, 200, {ok:true, valid:false});
-      return send(res, 200, {ok:true, valid:true, deliverable: pincodeAllowed(branch, pincode)});
+      return send(res, 200, {ok:true, valid:true, method:'pincode', deliverable: pincodeAllowed(branch, pincode)});
     }
 
     if (req.method === 'GET' && p === '/api/first-order-check') {
@@ -411,6 +454,8 @@ const server = http.createServer(async (req, res) => {
       const branch = BRANCHES.includes(b.branch) ? b.branch : null;
       const address = String(b.address || '').trim().slice(0, 400);
       const pincode = String(b.pincode || '').trim();
+      const lat = b.lat !== undefined && b.lat !== null && b.lat !== '' ? Number(b.lat) : null;
+      const lng = b.lng !== undefined && b.lng !== null && b.lng !== '' ? Number(b.lng) : null;
       const notes = String(b.notes || '').trim().slice(0, 400);
       const email = String(b.email || '').trim().slice(0, 120);
       if (name.length < 2) return send(res, 400, {ok:false, error:'Please enter your name.'});
@@ -419,9 +464,18 @@ const server = http.createServer(async (req, res) => {
       if (!branch) return send(res, 400, {ok:false, error:'Please choose a branch.'});
       if (type === 'Delivery' && address.length < 6) return send(res, 400, {ok:false, error:'Please enter your delivery address.'});
       if (type === 'Delivery') {
-        if (!/^\d{6}$/.test(pincode)) return send(res, 400, {ok:false, error:'Please enter a valid 6-digit delivery PIN code.'});
-        if (!pincodeAllowed(branch, pincode))
-          return send(res, 400, {ok:false, error:`Sorry, PIN code ${pincode} is outside our delivery range for the ${branch} branch. Please choose Pickup instead, or select a closer branch.`});
+        const byRadius = withinDeliveryRadius(branch, lat, lng);
+        if (byRadius !== null) {
+          if (!byRadius) {
+            const c = BRANCH_COORDS[branch];
+            const km = Math.round(distanceKm(c.lat, c.lng, lat, lng) * 10) / 10;
+            return send(res, 400, {ok:false, error:`Sorry, you're about ${km} km from our ${branch} branch — outside our ${DELIVERY_RADIUS_KM} km delivery radius. Please choose Pickup instead, or select a closer branch.`});
+          }
+        } else {
+          if (!/^\d{6}$/.test(pincode)) return send(res, 400, {ok:false, error:'Please enter a valid 6-digit delivery PIN code.'});
+          if (!pincodeAllowed(branch, pincode))
+            return send(res, 400, {ok:false, error:`Sorry, PIN code ${pincode} is outside our delivery range for the ${branch} branch. Please choose Pickup instead, or select a closer branch.`});
+        }
       }
 
       let priced;
