@@ -385,7 +385,7 @@ footer{background:var(--basil-deep);color:var(--cream);margin-top:20px}
             <h3>First Order? Get <span style="color:var(--gold)">15% OFF</span></h3>
             <p class="big">15%</p>
             <p>Just enter your mobile number at checkout — if it's your first order with us, <strong>15% comes off automatically</strong>. No code needed.</p>
-            <p class="fine">*Up to ₹100 off · one-time per customer · online orders only</p>
+            <p class="fine">*One-time per customer · online orders only</p>
           </div>
           <div class="offer-card red">
             <span class="ribbon">Mon &amp; Fri</span>
@@ -635,7 +635,7 @@ const UPI_NAME = 'Karunasindhu Chakrovarty';
 /* ---------- State ---------- */
 let cart = [];           // {key,name,variant,price,qty,veg,pz}
 let selected = {};       // itemKey -> chosen variant
-let order = {type:'Delivery', branch:'Bidhannagar', name:'', phone:'', address:'', notes:'', email:'', oid:'', firstOrderEligible:null, firstOrderPercent:15, firstOrderMaxOff:100};
+let order = {type:'Delivery', branch:'Bidhannagar', name:'', phone:'', address:'', notes:'', email:'', oid:'', firstOrderEligible:null, firstOrderPercent:15, firstOrderMaxOff:null};
 function newOrderId(){
   const d = new Date();
   const ds = String(d.getFullYear()).slice(2) + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
@@ -960,7 +960,8 @@ function estimateDiscount(){
   const bogoDiscount = (b.dayOK && order.type==='Pickup') ? b.discount : 0;
   let firstOrderDiscount = 0;
   if(order.firstOrderEligible){
-    firstOrderDiscount = Math.min(Math.round(sub * (order.firstOrderPercent||15)) / 100, order.firstOrderMaxOff||100);
+    const rawFirstOrder = Math.round(sub * (order.firstOrderPercent||15)) / 100;
+    firstOrderDiscount = (order.firstOrderMaxOff===null || order.firstOrderMaxOff===undefined) ? rawFirstOrder : Math.min(rawFirstOrder, order.firstOrderMaxOff);
   }
   const discount = Math.max(bogoDiscount, firstOrderDiscount);
   const type = discount===0 ? null : (bogoDiscount>=firstOrderDiscount ? 'BOGO' : 'FIRST_ORDER');
@@ -1091,7 +1092,7 @@ async function checkFirstOrderLive(){
       order.firstOrderPercent = d.percent;
       order.firstOrderMaxOff = d.maxOff;
       if(msg){
-        if(d.eligible){ msg.textContent = '🎉 You qualify for '+d.percent+'% off your first order (up to ₹'+d.maxOff+')!'; msg.style.display='block'; }
+        if(d.eligible){ msg.textContent = d.maxOff ? ('🎉 You qualify for '+d.percent+'% off your first order (up to ₹'+d.maxOff+')!') : ('🎉 You qualify for '+d.percent+'% off your first order!'); msg.style.display='block'; }
         else msg.style.display='none';
       }
       renderCart();
@@ -1367,7 +1368,7 @@ function toast(t){
   clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),2200);
 }
 (function(){
-  const items='🍕 Free Home Delivery — 🎉 Buy 1 Large Get 1 Small FREE (Mon & Fri) — 🔥 Newly Launched: Hawaiian Pizza — 🧀 Cheese Loaded In Every Bite — 📱 Pay With Any UPI App — 🎁 15% Off Your First Order Online (up to ₹100) — ';
+  const items='🍕 Free Home Delivery — 🎉 Buy 1 Large Get 1 Small FREE (Mon & Fri) — 🔥 Newly Launched: Hawaiian Pizza — 🧀 Cheese Loaded In Every Bite — 📱 Pay With Any UPI App — 🎁 15% Off Your First Order Online — ';
   document.getElementById('ticker').textContent = items + items;
 })();
 
