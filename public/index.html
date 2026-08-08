@@ -627,7 +627,7 @@ const UPI_NAME = 'Karunasindhu Chakrovarty';
 /* ---------- State ---------- */
 let cart = [];           // {key,name,variant,price,qty,veg,pz}
 let selected = {};       // itemKey -> chosen variant
-let order = {type:'Delivery', branch:'Bidhannagar', name:'', phone:'', address:'', notes:'', email:'', oid:''};
+let order = {type:'Delivery', branch:'Bidhannagar', name:'', phone:'', address:'', notes:'', email:'', oid:'', firstOrderEligible:null, firstOrderPercent:15, firstOrderMaxOff:100};
 function newOrderId(){
   const d = new Date();
   const ds = String(d.getFullYear()).slice(2) + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
@@ -911,11 +911,11 @@ function bogoInfo(){
 function cartHTML(){
   const sub = cart.reduce((s,c)=>s+c.price*c.qty,0);
   const b = bogoInfo();
-  const bogoApplies = b.dayOK && order.type==='Pickup' && b.freeCount>0;
-  const disc = bogoApplies ? b.discount : 0;
+  const est = estimateDiscount();
+  const disc = est.discount;
   const total = sub - disc;
   let hint='';
-  if(b.larges>0){
+  if(b.larges>0 && est.type!=='FIRST_ORDER'){
     if(!b.dayOK) hint='🎉 BOGO tip: buy 1 large, get 1 small free on Mondays & Fridays (pickup only).';
     else if(order.type!=='Pickup') hint='🎉 It’s BOGO day! Choose Pickup at checkout & add a small pizza — it becomes FREE.';
     else if(b.smallCount===0) hint='🎉 BOGO active! Add a small pizza — it’s FREE with your large (pickup, Mon & Fri).';
@@ -938,18 +938,29 @@ function cartHTML(){
     <div class="cart-body">${lines}</div>
     <div class="cart-foot">
       <div class="tot-row"><span>Subtotal</span><span>${INR(sub)}</span></div>
-      ${disc>0?`<div class="tot-row save"><span>BOGO — ${b.freeCount} small pizza${b.freeCount>1?'s':''} FREE 🎉</span><span>−${INR(disc)}</span></div>`:''}
+      ${disc>0?`<div class="tot-row save"><span>${est.type==='FIRST_ORDER'?'🎉 First order discount ('+order.firstOrderPercent+'%)':'BOGO — '+b.freeCount+' small pizza'+(b.freeCount>1?'s':'')+' FREE 🎉'}</span><span>−${INR(disc)}</span></div>`:''}
       <div class="tot-row"><span>Home delivery</span><span style="color:var(--basil);font-weight:800">FREE</span></div>
       <div class="tot-row grand"><span>Total</span><span>${INR(total)}</span></div>
       ${hint?`<div class="bogo-hint">${hint}</div>`:''}
       <button class="checkout-btn" ${cart.length===0?'disabled':''} onclick="openCheckout()">Checkout · ${INR(total)}</button>
     </div>`;
 }
-function grandTotal(){
+/* ---------- Combined discount estimate: BOGO vs first-order, larger wins, never stacked ---------- */
+function estimateDiscount(){
   const sub = cart.reduce((s,c)=>s+c.price*c.qty,0);
   const b = bogoInfo();
-  const disc = (b.dayOK && order.type==='Pickup') ? b.discount : 0;
-  return sub - disc;
+  const bogoDiscount = (b.dayOK && order.type==='Pickup') ? b.discount : 0;
+  let firstOrderDiscount = 0;
+  if(order.firstOrderEligible){
+    firstOrderDiscount = Math.min(Math.round(sub * (order.firstOrderPercent||15) / 100), order.firstOrderMaxOff||100);
+  }
+  const discount = Math.max(bogoDiscount, firstOrderDiscount);
+  const type = discount===0 ? null : (bogoDiscount>=firstOrderDiscount ? 'BOGO' : 'FIRST_ORDER');
+  return {discount, type, bogoDiscount, firstOrderDiscount};
+}
+function grandTotal(){
+  const sub = cart.reduce((s,c)=>s+c.price*c.qty,0);
+  return sub - estimateDiscount().discount;
 }
 function renderCart(){
   const html = cartHTML();
@@ -991,7 +1002,7 @@ function renderStep(){
         <select id="fBranch" onchange="checkPincodeLive()">${Object.keys(BRANCHES).map(b=>`<option ${order.branch===b?'selected':''}>${b}</option>`).join('')}</select>
       </div>
       <div class="field"><label for="fName">Full name</label><input id="fName" value="${order.name}" placeholder="e.g. Rahul Sharma"><div class="err" id="eName">Please enter your name.</div></div>
-      <div class="field"><label for="fPhone">Mobile number</label><input id="fPhone" inputmode="numeric" maxlength="10" value="${order.phone}" placeholder="10-digit mobile number"><div class="err" id="ePhone">Enter a valid 10-digit mobile number.</div></div>
+      <div class="field"><label for="fPhone">Mobile number</label><input id="fPhone" inputmode="numeric" maxlength="10" value="${order.phone}" placeholder="10-digit mobile number" oninput="checkFirstOrderLive()"><div class="err" id="ePhone">Enter a valid 10-digit mobile number.</div><div id="firstOrderMsg" style="display:none;font-size:.78rem;font-weight:700;margin-top:6px;padding:8px 12px;border-radius:8px;background:#E9F3EA;color:var(--basil)"></div></div>
       <div class="field"><label for="fEmail">Email address</label><input id="fEmail" type="email" value="${order.email}" placeholder="you@example.com — your order summary is emailed here"><div class="err" id="eEmail">Please enter a valid email address.</div></div>
       <div class="field" id="addrField" style="display:${order.type==='Delivery'?'block':'none'}"><label for="fAddr">Delivery address</label><textarea id="fAddr" rows="3" placeholder="House / street / landmark">${order.address}</textarea><div class="err" id="eAddr">Please enter your delivery address.</div></div>
       <div class="field" id="pinField" style="display:${order.type==='Delivery'?'block':'none'}"><label for="fPin">Delivery PIN code</label><input id="fPin" inputmode="numeric" maxlength="6" value="${order.pincode||''}" placeholder="6-digit PIN code" oninput="checkPincodeLive()"><div class="err" id="ePin">Please enter a valid 6-digit PIN code.</div><div id="pinRangeMsg" style="display:none;font-size:.78rem;font-weight:700;margin-top:6px;padding:8px 12px;border-radius:8px"></div></div>
@@ -1004,7 +1015,7 @@ function renderStep(){
     body.innerHTML = `
       <div class="summary-box">
         ${cart.map(c=>`<div class="tot-row"><span>${c.name}${c.variant?' ('+c.variant+')':''}${c.opt?' · '+c.opt:''} × ${c.qty}</span><span>${INR(c.price*c.qty)}</span></div>`).join('')}
-        ${(function(){const b=bogoInfo();const d=(b.dayOK&&order.type==='Pickup')?b.discount:0;return d>0?`<div class="tot-row save"><span>BOGO discount</span><span>−${INR(d)}</span></div>`:'';})()}
+        ${(function(){const e=estimateDiscount(); return e.discount>0?`<div class="tot-row save"><span>${e.type==='FIRST_ORDER'?'🎉 First order discount ('+order.firstOrderPercent+'%)':'BOGO discount'}</span><span>−${INR(e.discount)}</span></div>`:'';})()}
         <div class="tot-row grand"><span>Total payable</span><span>${INR(total)}</span></div>
       </div>
       <div class="field"><label>How would you like to pay?</label>
@@ -1027,6 +1038,7 @@ function renderStep(){
     if(order.type==='Delivery') msg += `*Address:* ${encodeURIComponent(order.address)}${order.pincode?' — PIN '+encodeURIComponent(order.pincode):''}%0A`;
     msg += `%0A*Items:*%0A`;
     cart.forEach(c=>{ msg += `• ${encodeURIComponent(c.name)}${c.variant?' ('+encodeURIComponent(c.variant)+')':''}${c.opt?' · '+encodeURIComponent(c.opt):''} × ${c.qty}%0A`; });
+    if(order.appliedDiscount>0) msg += `• ${order.appliedDiscountType==='FIRST_ORDER'?'First order discount':'BOGO discount'} — −${encodeURIComponent(INR(order.appliedDiscount))}%0A`;
     if(order.notes) msg += `%0A*Notes:* ${encodeURIComponent(order.notes)}%0A`;
     msg += `%0A` + payLine;
     body.innerHTML = `
@@ -1034,6 +1046,7 @@ function renderStep(){
         <div class="success-check">✅</div>
         <h3 style="font-family:'Fraunces',serif;font-size:1.5rem;margin:8px 0">Payment verified — thank you, ${order.name.split(' ')[0]}!</h3>
         <p style="color:var(--ink-soft);font-size:.92rem;margin-bottom:6px">Order <b>${order.oid}</b> · ${order.type} · <b>${INR(total)}</b> paid online</p>
+        ${order.appliedDiscount>0?`<p style="color:var(--basil);font-size:.85rem;font-weight:800;margin-bottom:6px">🎉 ${order.appliedDiscountType==='FIRST_ORDER'?'First order discount':'BOGO discount'} applied — you saved ${INR(order.appliedDiscount)}!</p>`:''}
         <p style="color:var(--ink-soft);font-size:.92rem;margin-bottom:14px">Your order is confirmed and has been sent straight to the <b>${order.branch}</b> kitchen. Keep this page open to track it live.</p>
         <div class="bogo-hint" id="liveStatus" style="margin-bottom:14px;font-size:.85rem">🍳 Status: Confirmed — kitchen notified</div>
         <a class="btn btn-upi btn-block" href="/track/${order.oid}" target="_blank" rel="noopener">🔎 Track this order live</a>
@@ -1054,6 +1067,29 @@ function setType(t){
   renderCart();
 }
 let pinCheckTimer = null;
+let firstOrderCheckTimer = null;
+async function checkFirstOrderLive(){
+  const el = document.getElementById('fPhone');
+  const msg = document.getElementById('firstOrderMsg');
+  const phone = el.value.trim();
+  clearTimeout(firstOrderCheckTimer);
+  if(!/^[6-9]\d{9}$/.test(phone)){ order.firstOrderEligible=null; if(msg) msg.style.display='none'; return; }
+  firstOrderCheckTimer = setTimeout(async ()=>{
+    try{
+      const r = await fetch('/api/first-order-check?phone='+phone);
+      const d = await r.json();
+      if(!d.ok || !d.valid) return;
+      order.firstOrderEligible = d.eligible;
+      order.firstOrderPercent = d.percent;
+      order.firstOrderMaxOff = d.maxOff;
+      if(msg){
+        if(d.eligible){ msg.textContent = '🎉 You qualify for '+d.percent+'% off your first order (up to ₹'+d.maxOff+')!'; msg.style.display='block'; }
+        else msg.style.display='none';
+      }
+      renderCart();
+    }catch(e){}
+  }, 400);
+}
 async function checkPincodeLive(){
   const el = document.getElementById('fPin');
   const msg = document.getElementById('pinRangeMsg');
@@ -1164,7 +1200,7 @@ async function startQrPay(){
       });
       const d = await res.json();
       if(!res.ok || !d.ok) throw new Error(d.error || 'Could not create the order.');
-      order.oid = d.oid; order.total = d.total; order.qrMode = true;
+      order.oid = d.oid; order.total = d.total; order.qrMode = true; order.appliedDiscount = d.discount||0; order.appliedDiscountType = d.discountType||null;
     }
     const qres = await fetch('/api/payment/upiqr',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({oid:order.oid})});
     const q = await qres.json();
@@ -1215,7 +1251,7 @@ async function startPayment(){
     });
     const d = await res.json();
     if(!res.ok || !d.ok) throw new Error(d.error || 'Could not create the order. Please try again.');
-    order.oid = d.oid; order.total = d.total;
+    order.oid = d.oid; order.total = d.total; order.appliedDiscount = d.discount||0; order.appliedDiscountType = d.discountType||null;
     const rz = new Razorpay({
       key: d.keyId, order_id: d.rzpOrderId, amount: d.amount, currency: 'INR',
       name: 'La Pizzariô', description: 'Order ' + d.oid,
@@ -1314,7 +1350,7 @@ function startStatusPoll(){
     }catch(e){}
   }, 8000);
 }
-function finishOrder(){ stopQrPoll(); clearInterval(statusTimer); order.qrMode=false; order.oid=''; cart=[]; renderCart(); closeModal(); toast('Order confirmed! We’re firing up the oven 🔥'); }
+function finishOrder(){ stopQrPoll(); clearInterval(statusTimer); order.qrMode=false; order.oid=''; order.appliedDiscount=0; order.appliedDiscountType=null; order.firstOrderEligible=null; cart=[]; renderCart(); closeModal(); toast('Order confirmed! We’re firing up the oven 🔥'); }
 
 /* ---------- Toast + ticker ---------- */
 let toastT;
@@ -1323,7 +1359,7 @@ function toast(t){
   clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),2200);
 }
 (function(){
-  const items='🍕 Free Home Delivery — 🎉 Buy 1 Large Get 1 Small FREE (Mon & Fri) — 🔥 Newly Launched: Hawaiian Pizza — 🧀 Cheese Loaded In Every Bite — 📱 Pay With Any UPI App — ';
+  const items='🍕 Free Home Delivery — 🎉 Buy 1 Large Get 1 Small FREE (Mon & Fri) — 🔥 Newly Launched: Hawaiian Pizza — 🧀 Cheese Loaded In Every Bite — 📱 Pay With Any UPI App — 🎁 Order Online at lapizzario.com & Get 15% Discount — ';
   document.getElementById('ticker').textContent = items + items;
 })();
 

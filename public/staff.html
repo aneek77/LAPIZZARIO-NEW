@@ -348,7 +348,7 @@ function renderOrders(flashIds){
         </div>
         ${o.type==='Delivery'&&o.address?`<div style="font-size:.8rem;margin-bottom:8px">🏠 ${o.address}${o.pincode?' — PIN '+o.pincode:''}</div>`:''}
         <div class="items">${items}
-          ${o.discount>0?`<div class="it-row save"><span>BOGO discount</span><span>−${INR(o.discount)}</span></div>`:''}
+          ${o.discount>0?`<div class="it-row save"><span>${o.discountType==='FIRST_ORDER'?'🎉 First order discount':'BOGO discount'}</span><span>−${INR(o.discount)}</span></div>`:''}
           <div class="tot"><span>Total</span><span>${INR(o.total)}</span></div>
         </div>
         ${o.status==='CREATED'

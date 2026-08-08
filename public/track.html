@@ -165,7 +165,7 @@ function render(o){
   sum.innerHTML = `
     <h2>Order summary</h2>
     ${(o.items||[]).map(i=>`<div class="it-row"><span>${esc(i.name)}${i.variant?' ('+esc(i.variant)+')':''}${i.opt?' · '+esc(i.opt):''} × ${i.qty}</span><span>${INR(i.price*i.qty)}</span></div>`).join('')}
-    ${o.discount>0?`<div class="it-row save"><span>BOGO discount</span><span>−${INR(o.discount)}</span></div>`:''}
+    ${o.discount>0?`<div class="it-row save"><span>${o.discountType==='FIRST_ORDER'?'🎉 First order discount':'BOGO discount'}</span><span>−${INR(o.discount)}</span></div>`:''}
     <div class="tot"><span>Total</span><span>${INR(o.total)}</span></div>
     <span class="pill">✅ Paid online</span>`;
 
