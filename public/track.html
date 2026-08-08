@@ -93,7 +93,7 @@ h2{font-family:'Fraunces',serif;font-weight:900;font-size:1.1rem;margin-bottom:1
 </div>
 
 <script>
-const INR = n => '₹' + Number(n||0).toLocaleString('en-IN');
+const INR = n => { n = Number(n)||0; const frac = Math.abs(n - Math.round(n)) > 0.001; return '₹' + n.toLocaleString('en-IN', frac ? {minimumFractionDigits:2,maximumFractionDigits:2} : {maximumFractionDigits:0}); };
 const esc = s => String(s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 function getOid(){

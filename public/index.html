@@ -380,6 +380,14 @@ footer{background:var(--basil-deep);color:var(--cream);margin-top:20px}
         <p class="section-sub">Pizza combos come with your choice of pizza — you'll pick it when you add the deal. *Terms &amp; conditions apply.</p>
         <div class="offers-grid">
           <div class="offer-card red">
+            <span class="ribbon">New Here?</span>
+            <div class="offer-img"><span class="ph-emoji">🎁</span><span class="ph-file">images/offer-first-order.jpg</span><img src="images/offer-first-order.jpg" alt="" loading="lazy" onerror="this.remove()" onload="this.parentElement.classList.add('has-photo')"></div>
+            <h3>First Order? Get <span style="color:var(--gold)">15% OFF</span></h3>
+            <p class="big">15%</p>
+            <p>Just enter your mobile number at checkout — if it's your first order with us, <strong>15% comes off automatically</strong>. No code needed.</p>
+            <p class="fine">*Up to ₹100 off · one-time per customer · online orders only</p>
+          </div>
+          <div class="offer-card red">
             <span class="ribbon">Mon &amp; Fri</span>
             <div class="offer-img"><span class="ph-emoji">🍕</span><span class="ph-file">images/offer-buy-one-get-one.jpg</span><img src="images/offer-buy-one-get-one.jpg" alt="" loading="lazy" onerror="this.remove()" onload="this.parentElement.classList.add('has-photo')"></div>
             <h3>Buy One, Get One <span style="color:var(--gold)">FREE</span></h3>
@@ -634,7 +642,7 @@ function newOrderId(){
   return 'LP-' + ds + '-' + Math.floor(1000 + Math.random()*9000);
 }
 let step = 1;
-const INR = n => '₹' + n.toLocaleString('en-IN');
+const INR = n => { n = Number(n)||0; const frac = Math.abs(n - Math.round(n)) > 0.001; return '₹' + n.toLocaleString('en-IN', frac ? {minimumFractionDigits:2,maximumFractionDigits:2} : {maximumFractionDigits:0}); };
 const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
 const SEC_EMOJI = {'veg-pizzas':'🍕','nonveg-pizzas':'🍕','stuffed-veg':'🧀','stuffed-nonveg':'🧀','veg-starters':'🥖','nonveg-starters':'🍗','burgers':'🍔','desserts':'🍫','beverages':'🥤','toppings':'🌶️'};
 
@@ -938,7 +946,7 @@ function cartHTML(){
     <div class="cart-body">${lines}</div>
     <div class="cart-foot">
       <div class="tot-row"><span>Subtotal</span><span>${INR(sub)}</span></div>
-      ${disc>0?`<div class="tot-row save"><span>${est.type==='FIRST_ORDER'?'🎉 First order discount ('+order.firstOrderPercent+'%)':'BOGO — '+b.freeCount+' small pizza'+(b.freeCount>1?'s':'')+' FREE 🎉'}</span><span>−${INR(disc)}</span></div>`:''}
+      ${disc>0?`<div class="tot-row save"><span>${est.type==='FIRST_ORDER'?'🎉 First order discount':'BOGO — '+b.freeCount+' small pizza'+(b.freeCount>1?'s':'')+' FREE 🎉'}</span><span>−${INR(disc)}</span></div>`:''}
       <div class="tot-row"><span>Home delivery</span><span style="color:var(--basil);font-weight:800">FREE</span></div>
       <div class="tot-row grand"><span>Total</span><span>${INR(total)}</span></div>
       ${hint?`<div class="bogo-hint">${hint}</div>`:''}
@@ -952,7 +960,7 @@ function estimateDiscount(){
   const bogoDiscount = (b.dayOK && order.type==='Pickup') ? b.discount : 0;
   let firstOrderDiscount = 0;
   if(order.firstOrderEligible){
-    firstOrderDiscount = Math.min(Math.round(sub * (order.firstOrderPercent||15) / 100), order.firstOrderMaxOff||100);
+    firstOrderDiscount = Math.min(Math.round(sub * (order.firstOrderPercent||15)) / 100, order.firstOrderMaxOff||100);
   }
   const discount = Math.max(bogoDiscount, firstOrderDiscount);
   const type = discount===0 ? null : (bogoDiscount>=firstOrderDiscount ? 'BOGO' : 'FIRST_ORDER');
@@ -1015,7 +1023,7 @@ function renderStep(){
     body.innerHTML = `
       <div class="summary-box">
         ${cart.map(c=>`<div class="tot-row"><span>${c.name}${c.variant?' ('+c.variant+')':''}${c.opt?' · '+c.opt:''} × ${c.qty}</span><span>${INR(c.price*c.qty)}</span></div>`).join('')}
-        ${(function(){const e=estimateDiscount(); return e.discount>0?`<div class="tot-row save"><span>${e.type==='FIRST_ORDER'?'🎉 First order discount ('+order.firstOrderPercent+'%)':'BOGO discount'}</span><span>−${INR(e.discount)}</span></div>`:'';})()}
+        ${(function(){const e=estimateDiscount(); return e.discount>0?`<div class="tot-row save"><span>${e.type==='FIRST_ORDER'?'🎉 First order discount':'BOGO discount'}</span><span>−${INR(e.discount)}</span></div>`:'';})()}
         <div class="tot-row grand"><span>Total payable</span><span>${INR(total)}</span></div>
       </div>
       <div class="field"><label>How would you like to pay?</label>
@@ -1359,7 +1367,7 @@ function toast(t){
   clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),2200);
 }
 (function(){
-  const items='🍕 Free Home Delivery — 🎉 Buy 1 Large Get 1 Small FREE (Mon & Fri) — 🔥 Newly Launched: Hawaiian Pizza — 🧀 Cheese Loaded In Every Bite — 📱 Pay With Any UPI App — 🎁 Order Online at lapizzario.com & Get 15% Discount — ';
+  const items='🍕 Free Home Delivery — 🎉 Buy 1 Large Get 1 Small FREE (Mon & Fri) — 🔥 Newly Launched: Hawaiian Pizza — 🧀 Cheese Loaded In Every Bite — 📱 Pay With Any UPI App — 🎁 15% Off Your First Order Online (up to ₹100) — ';
   document.getElementById('ticker').textContent = items + items;
 })();
 

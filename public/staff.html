@@ -207,7 +207,7 @@ const ST_LABEL = {
   PAID:'🆕 New — Paid ✓', PREPARING:'🍳 Preparing', READY:'📦 Ready / Out for Delivery',
   DONE:'🎉 Completed', CANCELLED:'⛔ Cancelled', CREATED:'💤 Unpaid / Abandoned'
 };
-const INR = n => '₹' + Number(n||0).toLocaleString('en-IN');
+const INR = n => { n = Number(n)||0; const frac = Math.abs(n - Math.round(n)) > 0.001; return '₹' + n.toLocaleString('en-IN', frac ? {minimumFractionDigits:2,maximumFractionDigits:2} : {maximumFractionDigits:0}); };
 
 let me = {branch:'ALL', pin:''};
 let orders = [];
