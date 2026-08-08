@@ -241,7 +241,7 @@ function computeTotal(rawItems, type, phone) {
   let firstOrderDiscount = 0;
   const eligible = FIRST_ORDER_DISCOUNT.enabled && phone && isFirstOrder(phone);
   if (eligible) {
-    firstOrderDiscount = Math.min(Math.round(sub * FIRST_ORDER_DISCOUNT.percent / 100), FIRST_ORDER_DISCOUNT.maxOff);
+    firstOrderDiscount = Math.min(Math.round(sub * FIRST_ORDER_DISCOUNT.percent) / 100, FIRST_ORDER_DISCOUNT.maxOff);
   }
   const discount = Math.max(bogoDiscount, firstOrderDiscount);
   const discountType = discount === 0 ? null : (bogoDiscount >= firstOrderDiscount ? 'BOGO' : 'FIRST_ORDER');
@@ -275,7 +275,7 @@ function hmacOK(payload, secret, expected) {
 
 function esc(s){ return String(s||'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function orderEmailHTML(o) {
-  const INR = n => '₹' + Number(n||0).toLocaleString('en-IN');
+  const INR = n => { n = Number(n)||0; const frac = Math.abs(n - Math.round(n)) > 0.001; return '₹' + n.toLocaleString('en-IN', frac ? {minimumFractionDigits:2,maximumFractionDigits:2} : {maximumFractionDigits:0}); };
   const rows = o.items.map(i =>
     `<tr><td style="padding:7px 10px;border-bottom:1px dashed #E3D5B8">${esc(i.name)}${i.variant?' ('+esc(i.variant)+')':''}${i.opt?' · '+esc(i.opt):''} × ${i.qty}</td><td align="right" style="padding:7px 10px;border-bottom:1px dashed #E3D5B8;font-weight:bold">${INR(i.price*i.qty)}</td></tr>`).join('');
   const payLine = `✅ Paid online — verified automatically`;
@@ -434,7 +434,7 @@ const server = http.createServer(async (req, res) => {
 
       const oid = newOid();
       const rzpOrder = await razorpay('/v1/orders', 'POST', {
-        amount: priced.total * 100,           // paise
+        amount: Math.round(priced.total * 100),           // paise
         currency: 'INR',
         receipt: oid,
         notes: {oid, branch},
@@ -445,7 +445,7 @@ const server = http.createServer(async (req, res) => {
         pay: 'ONLINE', rzpOrderId: rzpOrder.id, status: 'CREATED', history: [{s:'CREATED', t: Date.now()}],
       };
       saveDB();
-      return send(res, 200, {ok:true, oid, rzpOrderId: rzpOrder.id, keyId: CFG.RAZORPAY_KEY_ID, amount: priced.total * 100, total: priced.total, sub: priced.sub, discount: priced.discount, discountType: priced.discountType});
+      return send(res, 200, {ok:true, oid, rzpOrderId: rzpOrder.id, keyId: CFG.RAZORPAY_KEY_ID, amount: Math.round(priced.total * 100), total: priced.total, sub: priced.sub, discount: priced.discount, discountType: priced.discountType});
     }
 
     /* ---------- inline UPI QR: create a fixed-amount QR for an order ---------- */
@@ -464,7 +464,7 @@ const server = http.createServer(async (req, res) => {
           name: 'La Pizzario ' + o.oid,
           usage: 'single_use',
           fixed_amount: true,
-          payment_amount: o.total * 100,
+          payment_amount: Math.round(o.total * 100),
           description: 'Order ' + o.oid,
           close_by: Math.floor(Date.now()/1000) + 20*60,
           notes: {oid: o.oid, branch: o.branch},
@@ -488,7 +488,7 @@ const server = http.createServer(async (req, res) => {
       if (o.status === 'CREATED' && o.qrId) {
         try {
           const pays = await razorpay('/v1/qr_codes/' + encodeURIComponent(o.qrId) + '/payments', 'GET');
-          const hit = (pays.items || []).find(x => (x.status === 'captured' || x.status === 'authorized') && Number(x.amount) === o.total * 100);
+          const hit = (pays.items || []).find(x => (x.status === 'captured' || x.status === 'authorized') && Number(x.amount) === Math.round(o.total * 100));
           if (hit) {
             markPaid(o, hit.id, 'upi-qr');
             if (!o.emailSent) {
@@ -515,7 +515,7 @@ const server = http.createServer(async (req, res) => {
       // 2) independent live check with Razorpay's API: status + amount + order linkage
       const pay = await razorpay('/v1/payments/' + encodeURIComponent(b.razorpay_payment_id), 'GET');
       const captured = pay.status === 'captured' || pay.status === 'authorized';
-      if (!captured || pay.order_id !== o.rzpOrderId || Number(pay.amount) !== o.total * 100)
+      if (!captured || pay.order_id !== o.rzpOrderId || Number(pay.amount) !== Math.round(o.total * 100))
         return send(res, 400, {ok:false, error:'Payment could not be verified.'});
       markPaid(o, b.razorpay_payment_id, 'checkout+api');
       let emailed = !!o.emailSent;
@@ -538,7 +538,7 @@ const server = http.createServer(async (req, res) => {
         if (pay) {
           let o = pay.notes && pay.notes.oid ? db.orders[pay.notes.oid] : null;
           if (!o) o = Object.values(db.orders).find(x => x.rzpOrderId === pay.order_id);
-          if (o && Number(pay.amount) === o.total * 100) {
+          if (o && Number(pay.amount) === Math.round(o.total * 100)) {
             markPaid(o, pay.id, 'webhook');
             if (o.status === 'PAID' && !o.emailSent) sendOrderEmail(o).then(f => { if (f) { o.emailSent = true; saveDB(); } });
           }
