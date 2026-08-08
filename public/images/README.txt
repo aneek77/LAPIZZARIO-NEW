@@ -5,6 +5,7 @@ on the website — the photo appears automatically, no code changes needed.
 Recommended sizes: menu items 800x400 px, offer cards 800x380 px (landscape). JPG format.
 
 OFFER CARDS:
+  offer-first-order.jpg
   offer-buy-one-get-one.jpg
   offer-executive-meal.jpg
   offer-combo-meal-burger.jpg
