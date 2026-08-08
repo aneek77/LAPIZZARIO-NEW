@@ -50,13 +50,13 @@ const BRANCHES = ['Bidhannagar','Chandidas','S.B. More','Prantika','Raniganj','A
    Example:  'Asansol': ['713301','713302','713303'],
    ============================================================ */
 const SERVICEABLE_PINCODES = {
-  'Bidhannagar': ['713212','713206','713214','713216','713210','713211'],
-  'Chandidas':   ['731301','731213'],
-  'S.B. More':   ['713301','713302','713303','713304','713305','713325'],
-  'Prantika':    ['731235'],
-  'Raniganj':    ['713347','713321','713358','713383','713338','713337'],
-  'Asansol':     ['713301','713302','713303','713304','713305','713325'],
-  'Bolpur':      ['731204','731236'],
+  'Bidhannagar': ['713212'],
+  'Chandidas':   ['713205','713204'],
+  'S.B. More':   ['713201'],
+  'Prantika':    ['713204','713203'],
+  'Raniganj':    ['713347'],
+  'Asansol':     ['713304'],
+  'Bolpur':      ['731235'],
 };
 function pincodeAllowed(branch, pincode) {
   const list = SERVICEABLE_PINCODES[branch] || [];
@@ -194,7 +194,22 @@ function newOid() {
   return oid;
 }
 
-function computeTotal(rawItems, type) {
+/* ============================================================
+   FIRST-ORDER DISCOUNT — welcomes new online customers
+   ------------------------------------------------------------
+   15% off a customer's first successfully paid order, capped so
+   one big first order doesn't cost too much. Does NOT stack with
+   the BOGO offer — whichever discount is bigger for that order
+   wins; never both. Set enabled:false to switch off entirely.
+   ============================================================ */
+const FIRST_ORDER_DISCOUNT = { enabled: true, percent: 15, maxOff: 100 };
+function isFirstOrder(phone) {
+  return !Object.values(db.orders).some(o =>
+    o.phone === phone && ['PAID','PREPARING','READY','DONE'].includes(o.status)
+  );
+}
+
+function computeTotal(rawItems, type, phone) {
   if (!Array.isArray(rawItems) || rawItems.length === 0 || rawItems.length > 60)
     throw new Error('Cart is empty or invalid.');
   let sub = 0;
@@ -213,16 +228,24 @@ function computeTotal(rawItems, type) {
   if (hasTopping && !hasPizza)
     throw new Error('Extra toppings need a pizza in the same order — please add a pizza first.');
   // BOGO: Mon(1)/Fri(5), pickup only — cheapest small pizza free per large pizza
-  let discount = 0;
+  let bogoDiscount = 0;
   const day = new Date().getDay();
   if (type === 'Pickup' && (day === 1 || day === 5)) {
     const larges = items.filter(c => c.pz && c.variant === 'Large').reduce((s,c)=>s+c.qty, 0);
     const smalls = [];
     items.filter(c => c.pz && c.variant === 'Small').forEach(c => { for (let i=0;i<c.qty;i++) smalls.push(c.price); });
     smalls.sort((a,b)=>a-b);
-    discount = smalls.slice(0, Math.min(larges, smalls.length)).reduce((s,p)=>s+p, 0);
+    bogoDiscount = smalls.slice(0, Math.min(larges, smalls.length)).reduce((s,p)=>s+p, 0);
   }
-  return {items, sub, discount, total: sub - discount};
+  // First-order discount — only counted if it beats BOGO (never stacked)
+  let firstOrderDiscount = 0;
+  const eligible = FIRST_ORDER_DISCOUNT.enabled && phone && isFirstOrder(phone);
+  if (eligible) {
+    firstOrderDiscount = Math.min(Math.round(sub * FIRST_ORDER_DISCOUNT.percent / 100), FIRST_ORDER_DISCOUNT.maxOff);
+  }
+  const discount = Math.max(bogoDiscount, firstOrderDiscount);
+  const discountType = discount === 0 ? null : (bogoDiscount >= firstOrderDiscount ? 'BOGO' : 'FIRST_ORDER');
+  return {items, sub, discount, discountType, total: sub - discount};
 }
 
 async function razorpay(apiPath, method, body) {
@@ -339,7 +362,7 @@ function serveStatic(res, file) {
 function staffOK(req) {
   return (req.headers['x-staff-pin'] || '') === CFG.STAFF_PIN;
 }
-const publicOrder = o => ({ok:true, oid:o.oid, status:o.status, total:o.total, sub:o.sub, discount:o.discount,
+const publicOrder = o => ({ok:true, oid:o.oid, status:o.status, total:o.total, sub:o.sub, discount:o.discount, discountType:o.discountType||null,
   type:o.type, branch:o.branch, ts:o.ts, pay:o.pay, firstName:(o.name||'').split(' ')[0],
   items:o.items, driver:o.driver||null, history:o.history||[]});
 
@@ -371,6 +394,13 @@ const server = http.createServer(async (req, res) => {
       return send(res, 200, {ok:true, valid:true, deliverable: pincodeAllowed(branch, pincode)});
     }
 
+    if (req.method === 'GET' && p === '/api/first-order-check') {
+      const phone = String(url.searchParams.get('phone') || '').trim();
+      if (!/^[6-9]\d{9}$/.test(phone)) return send(res, 200, {ok:true, valid:false});
+      const eligible = FIRST_ORDER_DISCOUNT.enabled && isFirstOrder(phone);
+      return send(res, 200, {ok:true, valid:true, eligible, percent: FIRST_ORDER_DISCOUNT.percent, maxOff: FIRST_ORDER_DISCOUNT.maxOff});
+    }
+
     /* ---------- create order (customer) ---------- */
     if (req.method === 'POST' && p === '/api/orders') {
       const b = JSON.parse((await readBody(req)).toString() || '{}');
@@ -394,7 +424,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       let priced;
-      try { priced = computeTotal(b.items, type); }
+      try { priced = computeTotal(b.items, type, phone); }
       catch (e) { return send(res, 400, {ok:false, error: e.message}); }
       if (priced.total < 1) return send(res, 400, {ok:false, error:'Invalid order total.'});
 
@@ -411,11 +441,11 @@ const server = http.createServer(async (req, res) => {
       });
       db.orders[oid] = {
         oid, ts: Date.now(), name, phone, email, type, branch, address, pincode, notes,
-        items: priced.items, sub: priced.sub, discount: priced.discount, total: priced.total,
+        items: priced.items, sub: priced.sub, discount: priced.discount, discountType: priced.discountType, total: priced.total,
         pay: 'ONLINE', rzpOrderId: rzpOrder.id, status: 'CREATED', history: [{s:'CREATED', t: Date.now()}],
       };
       saveDB();
-      return send(res, 200, {ok:true, oid, rzpOrderId: rzpOrder.id, keyId: CFG.RAZORPAY_KEY_ID, amount: priced.total * 100, total: priced.total});
+      return send(res, 200, {ok:true, oid, rzpOrderId: rzpOrder.id, keyId: CFG.RAZORPAY_KEY_ID, amount: priced.total * 100, total: priced.total, sub: priced.sub, discount: priced.discount, discountType: priced.discountType});
     }
 
     /* ---------- inline UPI QR: create a fixed-amount QR for an order ---------- */
