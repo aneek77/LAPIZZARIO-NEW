@@ -125,6 +125,8 @@ header{position:sticky;top:0;z-index:60;background:var(--basil-deep);color:var(-
 
 /* ---------- Ticker ---------- */
 .ticker{background:var(--gold);color:var(--ink);font-weight:800;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;overflow:hidden;white-space:nowrap;padding:9px 0;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
+.closed-banner{background:var(--brick);color:#fff;text-align:center;font-weight:700;font-size:.9rem;padding:12px 20px;line-height:1.5}
+.closed-banner b{color:var(--gold-soft)}
 .ticker-track{display:inline-block;animation:tick 30s linear infinite}
 @keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
@@ -362,6 +364,10 @@ footer{background:var(--basil-deep);color:var(--cream);margin-top:20px}
 
 <div class="ticker" aria-hidden="true">
   <div class="ticker-track" id="ticker"></div>
+</div>
+
+<div id="closedBanner" class="closed-banner" style="display:none">
+  🕐 We're currently closed for online orders — ordering hours are <b id="closedHours">1:00 PM – 9:30 PM</b>. Feel free to browse the menu; checkout opens automatically during hours!
 </div>
 
 <div class="wrap">
@@ -941,7 +947,7 @@ function cartHTML(){
       <div class="tot-row"><span>Home delivery</span><span style="color:var(--basil);font-weight:800">FREE</span></div>
       <div class="tot-row grand"><span>Total</span><span>${INR(total)}</span></div>
       ${hint?`<div class="bogo-hint">${hint}</div>`:''}
-      <button class="checkout-btn" ${cart.length===0?'disabled':''} onclick="openCheckout()">Checkout · ${INR(total)}</button>
+      <button class="checkout-btn" ${(cart.length===0||!storeOpen)?'disabled':''} onclick="openCheckout()">${storeOpen ? 'Checkout · '+INR(total) : '🕐 Closed — opens '+storeHoursLabel.split('–')[0].trim()}</button>
     </div>`;
 }
 /* ---------- Combined discount estimate: BOGO vs first-order, larger wins, never stacked ---------- */
@@ -981,7 +987,7 @@ function closeDrawer(){document.getElementById('drawer').classList.remove('show'
 function openCartUI(){ if(window.innerWidth>=1024){document.getElementById('deskCart').scrollIntoView({behavior:'smooth',block:'center'});} else openDrawer(); }
 
 /* ---------- Checkout modal ---------- */
-function openCheckout(){ if(cart.length===0)return; closeDrawer(); step=1; order.oid=newOrderId(); order.utr=''; renderStep(); document.getElementById('modalScrim').classList.add('show'); }
+function openCheckout(){ if(cart.length===0)return; if(!storeOpen){ toast('🕐 Sorry, we\'re closed right now — online ordering is open '+storeHoursLabel); return; } closeDrawer(); step=1; order.oid=newOrderId(); order.utr=''; renderStep(); document.getElementById('modalScrim').classList.add('show'); }
 function closeModal(){ stopQrPoll(); document.getElementById('modalScrim').classList.remove('show'); }
 function setDots(){ for(let i=1;i<=3;i++) document.getElementById('dot'+i).classList.toggle('on', i<=step); }
 
@@ -1166,6 +1172,7 @@ async function checkPincodeLive(){
   }, 350);
 }
 async function goPay(){
+  if(!storeOpen){ toast('🕐 Sorry, we\'re closed right now — online ordering is open '+storeHoursLabel); closeModal(); return; }
   order.branch = document.getElementById('fBranch').value;
   order.name = document.getElementById('fName').value.trim();
   order.phone = document.getElementById('fPhone').value.trim();
@@ -1422,6 +1429,25 @@ function toast(t){
   const items='🍕 Free Home Delivery — 🎉 Buy 1 Large Get 1 Small FREE (Mon & Fri) — 🔥 Newly Launched: Hawaiian Pizza — 🧀 Cheese Loaded In Every Bite — 📱 Pay With Any UPI App — 🎁 15% Off Your First Order Online — ';
   document.getElementById('ticker').textContent = items + items;
 })();
+
+/* ---------- Order hours: is the store currently accepting online orders? ---------- */
+let storeOpen = true;
+let storeHoursLabel = '1:00 PM – 9:30 PM';
+async function checkStoreStatus(){
+  try{
+    const r = await fetch('/api/store-status');
+    const d = await r.json();
+    if(d.ok){
+      storeOpen = d.open;
+      storeHoursLabel = d.hours;
+      document.getElementById('closedHours').textContent = storeHoursLabel;
+      document.getElementById('closedBanner').style.display = storeOpen ? 'none' : 'block';
+      renderCart();
+    }
+  }catch(e){}
+}
+checkStoreStatus();
+setInterval(checkStoreStatus, 60000);
 
 renderMenu();
 renderCart();

@@ -135,9 +135,9 @@ header{position:sticky;top:0;z-index:50;background:var(--basil-deep);color:var(-
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .newflash{animation:flash 1.6s ease 2}
 @keyframes flash{0%,100%{box-shadow:var(--shadow)}50%{box-shadow:0 0 0 4px var(--gold)}}
-.alarm-banner{position:fixed;top:0;left:0;right:0;z-index:200;background:var(--brick);color:#fff;padding:13px 16px;display:none;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;font-weight:900;font-size:1rem;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:alarmPulse 1s ease infinite}
+.alarm-banner{position:fixed;top:0;left:0;right:0;z-index:200;background:var(--brick);color:#fff;padding:13px 16px;display:none;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;font-weight:900;font-size:1rem;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:alarmPulse .7s ease infinite}
 .alarm-banner.show{display:flex}
-.alarm-banner .bell{font-size:1.35rem;display:inline-block;animation:alarmBell .5s ease infinite}
+.alarm-banner .bell{font-size:1.35rem;display:inline-block;animation:alarmBell .4s ease infinite}
 @keyframes alarmPulse{0%,100%{background:var(--brick)}50%{background:var(--brick-deep)}}
 @keyframes alarmBell{0%,100%{transform:rotate(0)}25%{transform:rotate(-16deg)}75%{transform:rotate(16deg)}}
 .alarm-dismiss{background:#fff;color:var(--brick);font-weight:900;padding:9px 18px;border-radius:999px;white-space:nowrap}
@@ -496,14 +496,16 @@ let alarmCount = 0;
 function alarmSound(){
   try{
     ac = ac || new (window.AudioContext||window.webkitAudioContext)();
-    [0, 0.22, 0.44].forEach(delay=>{
+    const freqs = [1046, 784, 1046, 784, 1046]; // classic two-tone siren pattern — more piercing and recognizable than a flat repeat
+    freqs.forEach((freq, i)=>{
+      const delay = i * 0.22;
       const o=ac.createOscillator(), g=ac.createGain();
-      o.frequency.value = 1046; o.type='square';
+      o.frequency.value = freq; o.type='square';
       g.gain.setValueAtTime(.001, ac.currentTime+delay);
-      g.gain.exponentialRampToValueAtTime(.22, ac.currentTime+delay+0.01);
-      g.gain.exponentialRampToValueAtTime(.001, ac.currentTime+delay+0.18);
+      g.gain.exponentialRampToValueAtTime(.55, ac.currentTime+delay+0.01);
+      g.gain.exponentialRampToValueAtTime(.001, ac.currentTime+delay+0.19);
       o.connect(g); g.connect(ac.destination);
-      o.start(ac.currentTime+delay); o.stop(ac.currentTime+delay+0.2);
+      o.start(ac.currentTime+delay); o.stop(ac.currentTime+delay+0.21);
     });
   }catch(e){}
 }
@@ -513,7 +515,7 @@ function startAlarm(newCount){
   document.getElementById('alarmText').textContent = alarmCount + ' new order' + (alarmCount>1?'s':'') + ' waiting — start cooking!';
   banner.classList.add('show');
   alarmSound();
-  if(!alarmInterval) alarmInterval = setInterval(alarmSound, 8000);
+  if(!alarmInterval) alarmInterval = setInterval(alarmSound, 4000);
 }
 function stopAlarm(){
   alarmCount = 0;
