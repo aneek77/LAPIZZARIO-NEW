@@ -135,10 +135,22 @@ header{position:sticky;top:0;z-index:50;background:var(--basil-deep);color:var(-
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .newflash{animation:flash 1.6s ease 2}
 @keyframes flash{0%,100%{box-shadow:var(--shadow)}50%{box-shadow:0 0 0 4px var(--gold)}}
+.alarm-banner{position:fixed;top:0;left:0;right:0;z-index:200;background:var(--brick);color:#fff;padding:13px 16px;display:none;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;font-weight:900;font-size:1rem;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:alarmPulse 1s ease infinite}
+.alarm-banner.show{display:flex}
+.alarm-banner .bell{font-size:1.35rem;display:inline-block;animation:alarmBell .5s ease infinite}
+@keyframes alarmPulse{0%,100%{background:var(--brick)}50%{background:var(--brick-deep)}}
+@keyframes alarmBell{0%,100%{transform:rotate(0)}25%{transform:rotate(-16deg)}75%{transform:rotate(16deg)}}
+.alarm-dismiss{background:#fff;color:var(--brick);font-weight:900;padding:9px 18px;border-radius:999px;white-space:nowrap}
+.alarm-dismiss:active{transform:translateY(1px)}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
+<div class="alarm-banner" id="alarmBanner">
+  <span class="bell">🔔</span>
+  <span id="alarmText">New order waiting — start cooking!</span>
+  <button class="alarm-dismiss" onclick="stopAlarm()">✓ Got it — Stop Alarm</button>
+</div>
 
 <!-- ===== LOGIN GATE ===== -->
 <div id="gateView">
@@ -256,6 +268,7 @@ async function login(){
 }
 function logout(){
   clearInterval(pollTimer);
+  stopAlarm();
   me.pin='';
   document.getElementById('dashView').style.display='none';
   document.getElementById('gateView').style.display='block';
@@ -271,7 +284,7 @@ async function loadOrders(manual){
     orders.filter(o=>o.status!=='CREATED').forEach(o=>knownPaid.add(o.oid));
     if(!firstLoad && freshPaid.length){
       toast('🔔 ' + freshPaid.length + ' new paid order' + (freshPaid.length>1?'s':'') + ' — start cooking!');
-      ping();
+      startAlarm(freshPaid.length);
     } else if(manual) toast('Orders refreshed');
     firstLoad = false;
     document.getElementById('lastSync').textContent = 'Auto-refreshes every 10s · Last sync ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
@@ -476,18 +489,37 @@ async function assignCustom(oid, branch){
   setStatus(oid, 'READY', '', {name, phone});
 }
 
-/* new-order chime */
+/* ---------- Order alarm: repeats until staff dismisses it ---------- */
 let ac=null;
-function ping(){
+let alarmInterval = null;
+let alarmCount = 0;
+function alarmSound(){
   try{
     ac = ac || new (window.AudioContext||window.webkitAudioContext)();
-    const o=ac.createOscillator(), g=ac.createGain();
-    o.frequency.value=880; o.type='sine';
-    g.gain.setValueAtTime(.25,ac.currentTime);
-    g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+.6);
-    o.connect(g); g.connect(ac.destination);
-    o.start(); o.stop(ac.currentTime+.6);
+    [0, 0.22, 0.44].forEach(delay=>{
+      const o=ac.createOscillator(), g=ac.createGain();
+      o.frequency.value = 1046; o.type='square';
+      g.gain.setValueAtTime(.001, ac.currentTime+delay);
+      g.gain.exponentialRampToValueAtTime(.22, ac.currentTime+delay+0.01);
+      g.gain.exponentialRampToValueAtTime(.001, ac.currentTime+delay+0.18);
+      o.connect(g); g.connect(ac.destination);
+      o.start(ac.currentTime+delay); o.stop(ac.currentTime+delay+0.2);
+    });
   }catch(e){}
+}
+function startAlarm(newCount){
+  alarmCount += newCount;
+  const banner = document.getElementById('alarmBanner');
+  document.getElementById('alarmText').textContent = alarmCount + ' new order' + (alarmCount>1?'s':'') + ' waiting — start cooking!';
+  banner.classList.add('show');
+  alarmSound();
+  if(!alarmInterval) alarmInterval = setInterval(alarmSound, 8000);
+}
+function stopAlarm(){
+  alarmCount = 0;
+  document.getElementById('alarmBanner').classList.remove('show');
+  clearInterval(alarmInterval);
+  alarmInterval = null;
 }
 
 let toastT;

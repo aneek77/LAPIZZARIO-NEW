@@ -113,9 +113,6 @@ header{position:sticky;top:0;z-index:60;background:var(--basil-deep);color:var(-
 .btn-primary:active{transform:translateY(2px);box-shadow:none}
 .btn-ghost{border:2px solid rgba(255,250,238,.55);color:var(--cream)}
 .btn-ghost:hover{background:rgba(255,255,255,.1)}
-.btn-zomato{background:#E23744;color:#fff}
-.btn-swiggy{background:#FC8019;color:#fff}
-.btn-zomato:hover,.btn-swiggy:hover{transform:translateY(-2px)}
 .hero-badges{display:flex;gap:22px;flex-wrap:wrap;margin-top:36px;font-weight:700;font-size:.85rem;color:var(--gold-soft)}
 .hero-badges span{display:flex;align-items:center;gap:8px}
 .hero-inner{display:grid;grid-template-columns:1fr;gap:36px;align-items:center}
@@ -347,11 +344,9 @@ footer{background:var(--basil-deep);color:var(--cream);margin-top:20px}
     <div>
     <span class="eyebrow">🔥 Newly Launched — Hawaiian Pizza</span>
     <h1>Hot, fresh &amp; mouth-watering pizza<br><span>at unbelievable prices.</span></h1>
-    <p class="lead">Cheese loaded in every bite. Order online for <strong>free home delivery</strong>, pay instantly by UPI, or find us on Zomato &amp; Swiggy.</p>
+    <p class="lead">Cheese loaded in every bite. Order online for <strong>free home delivery</strong>, pay instantly by UPI.</p>
     <div class="hero-ctas">
       <a class="btn btn-primary" href="#menu">Order Online →</a>
-      <a class="btn btn-zomato" href="https://www.zomato.com/search?q=La%20Pizzario" target="_blank" rel="noopener">Order on Zomato</a>
-      <a class="btn btn-swiggy" href="https://www.swiggy.com/search?query=La%20Pizzario" target="_blank" rel="noopener">Order on Swiggy</a>
     </div>
     <div class="hero-badges">
       <span>🛵 Free Home Delivery</span>
@@ -483,10 +478,6 @@ footer{background:var(--basil-deep);color:var(--cream);margin-top:20px}
     <div>
       <h4>La Pizzariô</h4>
       <p style="font-size:.9rem;max-width:340px;color:rgba(255,250,238,.85)">The best pizza in town — cheese loaded in every bite. Hot, fresh &amp; mouth-watering pizza at unbelievable prices, with free home delivery.</p>
-      <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
-        <a class="btn btn-zomato" style="padding:9px 16px;font-size:.8rem" href="https://www.zomato.com/search?q=La%20Pizzario" target="_blank" rel="noopener">Zomato</a>
-        <a class="btn btn-swiggy" style="padding:9px 16px;font-size:.8rem" href="https://www.swiggy.com/search?query=La%20Pizzario" target="_blank" rel="noopener">Swiggy</a>
-      </div>
     </div>
     <div>
       <h4>Our Branches</h4>
@@ -1008,13 +999,19 @@ function renderStep(){
         </div>
       </div>
       <div class="field"><label for="fBranch">Branch</label>
-        <select id="fBranch" onchange="checkPincodeLive()">${Object.keys(BRANCHES).map(b=>`<option ${order.branch===b?'selected':''}>${b}</option>`).join('')}</select>
+        <select id="fBranch" onchange="geoResult=null; document.getElementById('locMsg').style.display='none'; document.getElementById('locBtn').textContent='📍 Share my location — check if I am in range'; checkPincodeLive();">${Object.keys(BRANCHES).map(b=>`<option ${order.branch===b?'selected':''}>${b}</option>`).join('')}</select>
       </div>
       <div class="field"><label for="fName">Full name</label><input id="fName" value="${order.name}" placeholder="e.g. Rahul Sharma"><div class="err" id="eName">Please enter your name.</div></div>
       <div class="field"><label for="fPhone">Mobile number</label><input id="fPhone" inputmode="numeric" maxlength="10" value="${order.phone}" placeholder="10-digit mobile number" oninput="checkFirstOrderLive()"><div class="err" id="ePhone">Enter a valid 10-digit mobile number.</div><div id="firstOrderMsg" style="display:none;font-size:.78rem;font-weight:700;margin-top:6px;padding:8px 12px;border-radius:8px;background:#E9F3EA;color:var(--basil)"></div></div>
       <div class="field"><label for="fEmail">Email address</label><input id="fEmail" type="email" value="${order.email}" placeholder="you@example.com — your order summary is emailed here"><div class="err" id="eEmail">Please enter a valid email address.</div></div>
       <div class="field" id="addrField" style="display:${order.type==='Delivery'?'block':'none'}"><label for="fAddr">Delivery address</label><textarea id="fAddr" rows="3" placeholder="House / street / landmark">${order.address}</textarea><div class="err" id="eAddr">Please enter your delivery address.</div></div>
-      <div class="field" id="pinField" style="display:${order.type==='Delivery'?'block':'none'}"><label for="fPin">Delivery PIN code</label><input id="fPin" inputmode="numeric" maxlength="6" value="${order.pincode||''}" placeholder="6-digit PIN code" oninput="checkPincodeLive()"><div class="err" id="ePin">Please enter a valid 6-digit PIN code.</div><div id="pinRangeMsg" style="display:none;font-size:.78rem;font-weight:700;margin-top:6px;padding:8px 12px;border-radius:8px"></div></div>
+      <div class="field" id="locField" style="display:${order.type==='Delivery'?'block':'none'}">
+        <label>Delivery area check</label>
+        <button type="button" id="locBtn" class="checkout-btn" style="background:var(--basil);box-shadow:0 3px 0 var(--basil-deep);padding:11px" onclick="checkLocationLive()">📍 Share my location — check if I'm in range</button>
+        <div id="locMsg" style="display:none;font-size:.78rem;font-weight:700;margin-top:8px;padding:8px 12px;border-radius:8px"></div>
+        <p style="font-size:.74rem;color:var(--ink-soft);margin-top:6px">Fastest way to confirm you're within our ${'3'} km delivery radius. Prefer not to share location? <a href="#" onclick="showPinFallback();return false;" style="color:var(--basil);font-weight:800">Enter your PIN code instead</a>.</p>
+      </div>
+      <div class="field" id="pinField" style="display:none"><label for="fPin">Delivery PIN code</label><input id="fPin" inputmode="numeric" maxlength="6" value="${order.pincode||''}" placeholder="6-digit PIN code" oninput="checkPincodeLive()"><div class="err" id="ePin">Please enter a valid 6-digit PIN code.</div><div id="pinRangeMsg" style="display:none;font-size:.78rem;font-weight:700;margin-top:6px;padding:8px 12px;border-radius:8px"></div></div>
       <div class="field"><label for="fNotes">Order notes <span style="font-weight:600;color:var(--ink-soft)">(combo pizza choice, spice level…)</span></label><textarea id="fNotes" rows="2" placeholder="e.g. Meal for Two — Tandoori Chicken pizza">${order.notes}</textarea></div>
       <button class="checkout-btn" onclick="goPay()">Continue to Payment →</button>`;
   }
@@ -1072,8 +1069,54 @@ function setType(t){
   document.getElementById('segDel').classList.toggle('on',t==='Delivery');
   document.getElementById('segPic').classList.toggle('on',t==='Pickup');
   document.getElementById('addrField').style.display = t==='Delivery'?'block':'none';
-  document.getElementById('pinField').style.display = t==='Delivery'?'block':'none';
+  document.getElementById('locField').style.display = t==='Delivery'?'block':'none';
+  if(t!=='Delivery') document.getElementById('pinField').style.display='none';
   renderCart();
+}
+function showPinFallback(){
+  document.getElementById('pinField').style.display='block';
+  document.getElementById('fPin').focus();
+}
+let geoResult = null; // {lat,lng,deliverable,distanceKm} once checked
+async function checkLocationLive(){
+  const btn = document.getElementById('locBtn');
+  const msg = document.getElementById('locMsg');
+  const branch = document.getElementById('fBranch').value;
+  if(!navigator.geolocation){ msg.textContent='📍 Location is not supported on this browser — please use the PIN code option below.'; msg.style.background='#FADCD9'; msg.style.color='var(--brick)'; msg.style.display='block'; showPinFallback(); return; }
+  btn.disabled = true; btn.textContent = '📍 Checking your location…';
+  navigator.geolocation.getCurrentPosition(async (pos)=>{
+    const lat = pos.coords.latitude, lng = pos.coords.longitude;
+    try{
+      const r = await fetch('/api/delivery-check?branch='+encodeURIComponent(branch)+'&lat='+lat+'&lng='+lng);
+      const d = await r.json();
+      btn.disabled = false; btn.textContent = '📍 Re-check my location';
+      if(d.ok && d.valid && d.method==='radius'){
+        geoResult = {lat, lng, deliverable:d.deliverable, distanceKm:d.distanceKm};
+        if(d.deliverable){
+          msg.textContent = '✅ That is '+d.distanceKm+' km away — within our '+d.radiusKm+' km delivery radius!';
+          msg.style.background = '#E9F3EA'; msg.style.color = 'var(--basil)';
+        } else {
+          msg.textContent = '⚠️ That is '+d.distanceKm+' km from '+branch+' — outside our '+d.radiusKm+' km delivery radius. Try Pickup, a closer branch, or enter your PIN code below.';
+          msg.style.background = '#FADCD9'; msg.style.color = 'var(--brick)';
+        }
+        msg.style.display='block';
+      } else {
+        msg.textContent = '📍 Could not verify distance for this branch — please use the PIN code option below.';
+        msg.style.background='#FBF1D8'; msg.style.color='#7a5a12'; msg.style.display='block';
+        showPinFallback();
+      }
+    }catch(e){
+      btn.disabled = false; btn.textContent = '📍 Share my location — check if I am in range';
+      msg.textContent='⚠️ Could not check your location — please use the PIN code option below.'; msg.style.background='#FADCD9'; msg.style.color='var(--brick)'; msg.style.display='block';
+      showPinFallback();
+    }
+  }, (err)=>{
+    btn.disabled = false; btn.textContent = '📍 Share my location — check if I am in range';
+    msg.textContent = '📍 Location access denied or unavailable — no problem, just enter your PIN code below.';
+    msg.style.background='#FBF1D8'; msg.style.color='#7a5a12'; msg.style.display='block';
+    geoResult = null;
+    showPinFallback();
+  }, {enableHighAccuracy:true, timeout:10000});
 }
 let pinCheckTimer = null;
 let firstOrderCheckTimer = null;
@@ -1128,6 +1171,7 @@ async function goPay(){
   order.phone = document.getElementById('fPhone').value.trim();
   order.email = document.getElementById('fEmail').value.trim();
   order.address = (document.getElementById('fAddr')?document.getElementById('fAddr').value.trim():'');
+  const pinFieldVisible = document.getElementById('pinField').style.display !== 'none';
   order.pincode = (document.getElementById('fPin')?document.getElementById('fPin').value.trim():'');
   order.notes = document.getElementById('fNotes').value.trim();
   let ok=true;
@@ -1135,22 +1179,29 @@ async function goPay(){
   show('eName', order.name.length<2);
   show('ePhone', !/^[6-9]\d{9}$/.test(order.phone));
   show('eEmail', !/^\S+@\S+\.\S+$/.test(order.email));
+  const haveUsableGeo = geoResult && geoResult.deliverable;
   if(order.type==='Delivery'){
     show('eAddr', order.address.length<6);
-    show('ePin', !/^\d{6}$/.test(order.pincode));
+    if(!haveUsableGeo && pinFieldVisible) show('ePin', !/^\d{6}$/.test(order.pincode));
+    else if(!haveUsableGeo && !pinFieldVisible){ showPinFallback(); ok=false; }
   }
   if(!ok)return;
   if(order.type==='Delivery'){
     const btn = document.querySelector('#modalBody .checkout-btn');
     if(btn){ btn.disabled = true; btn.textContent = 'Checking delivery area…'; }
     try{
-      const r = await fetch('/api/delivery-check?branch='+encodeURIComponent(order.branch)+'&pincode='+order.pincode);
+      const qs = haveUsableGeo
+        ? 'branch='+encodeURIComponent(order.branch)+'&lat='+geoResult.lat+'&lng='+geoResult.lng
+        : 'branch='+encodeURIComponent(order.branch)+'&pincode='+order.pincode;
+      const r = await fetch('/api/delivery-check?'+qs);
       const d = await r.json();
       if(d.ok && d.valid && !d.deliverable){
-        const msg = document.getElementById('pinRangeMsg');
-        msg.textContent = '⚠️ Sorry, this PIN code is outside our delivery range for ' + order.branch + '. Please choose Pickup, or select a closer branch.';
-        msg.style.background = '#FADCD9'; msg.style.color = 'var(--brick)'; msg.style.display = 'block';
-        document.getElementById('fPin').focus();
+        const msgEl = haveUsableGeo ? document.getElementById('locMsg') : document.getElementById('pinRangeMsg');
+        msgEl.textContent = haveUsableGeo
+          ? '⚠️ You\'re '+d.distanceKm+' km from '+order.branch+' — outside our '+d.radiusKm+' km delivery radius. Please choose Pickup, select a closer branch, or try the PIN code option.'
+          : '⚠️ Sorry, this PIN code is outside our delivery range for ' + order.branch + '. Please choose Pickup, or select a closer branch.';
+        msgEl.style.background = '#FADCD9'; msgEl.style.color = 'var(--brick)'; msgEl.style.display = 'block';
+        if(!haveUsableGeo) document.getElementById('fPin').focus();
         if(btn){ btn.disabled = false; btn.textContent = 'Continue to Payment →'; }
         return;
       }
@@ -1203,7 +1254,7 @@ async function startQrPay(){
         method:'POST', headers:{'Content-Type':'application/json'},
         body: JSON.stringify({
           name:order.name, phone:order.phone, email:order.email, type:order.type, branch:order.branch,
-          address:order.address, pincode:order.pincode, notes:order.notes,
+          address:order.address, pincode:order.pincode, lat:(geoResult&&geoResult.deliverable?geoResult.lat:null), lng:(geoResult&&geoResult.deliverable?geoResult.lng:null), notes:order.notes,
           items: cart.map(c=>({name:c.name, variant:c.variant, qty:c.qty, opt:c.opt||''}))
         })
       });
@@ -1254,7 +1305,7 @@ async function startPayment(){
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         name:order.name, phone:order.phone, email:order.email, type:order.type, branch:order.branch,
-        address:order.address, pincode:order.pincode, notes:order.notes,
+        address:order.address, pincode:order.pincode, lat:(geoResult&&geoResult.deliverable?geoResult.lat:null), lng:(geoResult&&geoResult.deliverable?geoResult.lng:null), notes:order.notes,
         items: cart.map(c=>({name:c.name, variant:c.variant, qty:c.qty, opt:c.opt||''}))
       })
     });
@@ -1359,7 +1410,7 @@ function startStatusPoll(){
     }catch(e){}
   }, 8000);
 }
-function finishOrder(){ stopQrPoll(); clearInterval(statusTimer); order.qrMode=false; order.oid=''; order.appliedDiscount=0; order.appliedDiscountType=null; order.firstOrderEligible=null; cart=[]; renderCart(); closeModal(); toast('Order confirmed! We’re firing up the oven 🔥'); }
+function finishOrder(){ stopQrPoll(); clearInterval(statusTimer); order.qrMode=false; order.oid=''; order.appliedDiscount=0; order.appliedDiscountType=null; order.firstOrderEligible=null; geoResult=null; cart=[]; renderCart(); closeModal(); toast('Order confirmed! We’re firing up the oven 🔥'); }
 
 /* ---------- Toast + ticker ---------- */
 let toastT;
