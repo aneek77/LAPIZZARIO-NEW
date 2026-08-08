@@ -202,7 +202,7 @@ function newOid() {
    the BOGO offer — whichever discount is bigger for that order
    wins; never both. Set enabled:false to switch off entirely.
    ============================================================ */
-const FIRST_ORDER_DISCOUNT = { enabled: true, percent: 15, maxOff: 100 };
+const FIRST_ORDER_DISCOUNT = { enabled: true, percent: 15, maxOff: null };  // maxOff: null = no cap, true 15% every time
 function isFirstOrder(phone) {
   return !Object.values(db.orders).some(o =>
     o.phone === phone && ['PAID','PREPARING','READY','DONE'].includes(o.status)
@@ -241,7 +241,8 @@ function computeTotal(rawItems, type, phone) {
   let firstOrderDiscount = 0;
   const eligible = FIRST_ORDER_DISCOUNT.enabled && phone && isFirstOrder(phone);
   if (eligible) {
-    firstOrderDiscount = Math.min(Math.round(sub * FIRST_ORDER_DISCOUNT.percent) / 100, FIRST_ORDER_DISCOUNT.maxOff);
+    const rawFirstOrder = Math.round(sub * FIRST_ORDER_DISCOUNT.percent) / 100;
+    firstOrderDiscount = FIRST_ORDER_DISCOUNT.maxOff === null ? rawFirstOrder : Math.min(rawFirstOrder, FIRST_ORDER_DISCOUNT.maxOff);
   }
   const discount = Math.max(bogoDiscount, firstOrderDiscount);
   const discountType = discount === 0 ? null : (bogoDiscount >= firstOrderDiscount ? 'BOGO' : 'FIRST_ORDER');
