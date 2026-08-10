@@ -80,6 +80,22 @@ header{position:sticky;top:0;z-index:50;background:var(--basil-deep);color:var(-
 
 /* Order cards */
 .orders{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(330px,100%),1fr));gap:14px}
+.history-view{margin-top:6px}
+.history-filters{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:16px}
+.hf-field{display:flex;flex-direction:column;gap:4px}
+.hf-field label{font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+.hf-field input{border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;font-family:inherit;font-size:.85rem;background:var(--cream)}
+.hist-quick{padding:9px 14px;border-radius:10px;font-size:.8rem}
+.history-summary{background:linear-gradient(140deg,var(--basil),var(--basil-deep));color:#fff;border-radius:14px;padding:16px 20px;margin-bottom:16px;display:flex;gap:30px;flex-wrap:wrap}
+.history-summary .hs-stat b{display:block;font-family:'Fraunces',serif;font-weight:900;font-size:1.5rem}
+.history-summary .hs-stat span{font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.8)}
+.history-table-wrap{background:var(--cream);border:1px solid var(--line);border-radius:14px;overflow-x:auto;box-shadow:var(--shadow)}
+.history-table{width:100%;border-collapse:collapse;font-size:.83rem;white-space:nowrap}
+.history-table th{text-align:left;padding:12px 14px;background:var(--paper);font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);border-bottom:2px solid var(--line)}
+.history-table td{padding:11px 14px;border-bottom:1px dashed var(--line)}
+.history-table tr:last-child td{border-bottom:none}
+.history-table tr:hover td{background:rgba(217,164,65,.08)}
+.hist-status{font-size:.66rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding:4px 9px;border-radius:99px;white-space:nowrap}
 .card{background:var(--cream);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
 .card-head{padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px dashed var(--line)}
 .oid{font-family:'Fraunces',serif;font-weight:900;font-size:1.02rem}
@@ -185,6 +201,7 @@ header{position:sticky;top:0;z-index:50;background:var(--basil-deep);color:var(-
       <div class="who">
         <span class="pill" id="whoBranch">—</span>
         <button class="btn btn-gold" onclick="openDrivers()">🛵 Drivers</button>
+        <button class="btn btn-gold" onclick="toggleHistory()" id="historyBtn">📜 Payment History</button>
         <button class="btn btn-gold" onclick="loadOrders(true)">↻ Refresh</button>
         <button class="btn btn-ghost" onclick="logout()">Log out</button>
       </div>
@@ -194,12 +211,29 @@ header{position:sticky;top:0;z-index:50;background:var(--basil-deep);color:var(-
   <div class="wrap">
     <div class="stats" id="stats"></div>
     <div class="toolbar">
-      <input id="q" placeholder="🔍 Search order ID, name or phone…" oninput="renderOrders()">
+      <input id="q" placeholder="🔍 Search order ID, name or phone…" oninput="renderOrders(); if(historyMode) renderHistory();">
       <select id="branchFilter" onchange="renderAll()" style="display:none"></select>
       <span class="refresh-note" id="lastSync">—</span>
     </div>
     <div class="tabs" id="tabs"></div>
     <div class="orders" id="orders"></div>
+
+    <div class="history-view" id="historyView" style="display:none">
+      <div class="history-filters">
+        <div class="hf-field"><label>From</label><input type="date" id="histFrom" onchange="renderHistory()"></div>
+        <div class="hf-field"><label>To</label><input type="date" id="histTo" onchange="renderHistory()"></div>
+        <button class="btn btn-ghost hist-quick" onclick="setHistRange(7)">Last 7 days</button>
+        <button class="btn btn-ghost hist-quick" onclick="setHistRange(30)">Last 30 days</button>
+        <button class="btn btn-ghost hist-quick" onclick="setHistRange('all')">All time</button>
+      </div>
+      <div class="history-summary" id="historySummary"></div>
+      <div class="history-table-wrap">
+        <table class="history-table">
+          <thead><tr><th>Date &amp; Time</th><th>Order ID</th><th>Customer</th><th>Branch</th><th>Amount</th><th>Payment</th><th>Status</th></tr></thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -289,6 +323,7 @@ async function loadOrders(manual){
     firstLoad = false;
     document.getElementById('lastSync').textContent = 'Auto-refreshes every 10s · Last sync ' + new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     renderAll(freshPaid.map(o=>o.oid));
+    if(historyMode) renderHistory();
   }catch(e){
     if(e.message==='PIN'){ logout(); return; }
     document.getElementById('lastSync').textContent = 'Sync failed — tap Refresh';
@@ -312,6 +347,66 @@ function ago(ts){
   return new Date(ts).toLocaleDateString('en-IN',{day:'numeric',month:'short'});
 }
 function isToday(ts){const d=new Date(ts),n=new Date();return d.getDate()===n.getDate()&&d.getMonth()===n.getMonth()&&d.getFullYear()===n.getFullYear();}
+
+/* ---------- Payment History: full searchable/date-filterable record of every order ---------- */
+let historyMode = false;
+function toggleHistory(){
+  historyMode = !historyMode;
+  document.getElementById('stats').style.display = historyMode ? 'none' : 'grid';
+  document.getElementById('tabs').style.display = historyMode ? 'none' : 'flex';
+  document.getElementById('orders').style.display = historyMode ? 'none' : 'grid';
+  document.getElementById('historyView').style.display = historyMode ? 'block' : 'none';
+  document.getElementById('historyBtn').textContent = historyMode ? '🍕 Back to Kitchen View' : '📜 Payment History';
+  if(historyMode){
+    if(!document.getElementById('histFrom').value) setHistRange(30);
+    else renderHistory();
+  }
+}
+function toDateInputValue(d){ return d.toISOString().slice(0,10); }
+function setHistRange(daysOrAll){
+  const to = new Date();
+  document.getElementById('histTo').value = toDateInputValue(to);
+  if(daysOrAll === 'all'){
+    document.getElementById('histFrom').value = '2020-01-01';
+  } else {
+    const from = new Date(); from.setDate(from.getDate() - daysOrAll);
+    document.getElementById('histFrom').value = toDateInputValue(from);
+  }
+  renderHistory();
+}
+function renderHistory(){
+  const fromVal = document.getElementById('histFrom').value;
+  const toVal = document.getElementById('histTo').value;
+  const fromMs = fromVal ? new Date(fromVal+'T00:00:00').getTime() : 0;
+  const toMs = toVal ? new Date(toVal+'T23:59:59').getTime() : Date.now();
+  const q = document.getElementById('q').value.trim().toLowerCase();
+
+  let list = orders.filter(o => o.status !== 'CREATED' && o.ts >= fromMs && o.ts <= toMs);
+  if(me.branch==='ALL'){
+    const bf = document.getElementById('branchFilter').value;
+    if(bf && bf!=='ALL') list = list.filter(o=>o.branch===bf);
+  }
+  if(q) list = list.filter(o => (o.oid+' '+o.name+' '+o.phone).toLowerCase().includes(q));
+  list.sort((a,b)=> b.ts - a.ts);
+
+  const paidList = list.filter(o=>o.status!=='CANCELLED');
+  const totalRevenue = paidList.reduce((s,o)=>s+o.total,0);
+  document.getElementById('historySummary').innerHTML = `
+    <div class="hs-stat"><b>${list.length}</b><span>Orders in range</span></div>
+    <div class="hs-stat"><b>${INR(totalRevenue)}</b><span>Total revenue</span></div>
+    <div class="hs-stat"><b>${paidList.length ? INR(totalRevenue/paidList.length) : INR(0)}</b><span>Average order value</span></div>`;
+
+  document.getElementById('historyBody').innerHTML = list.length ? list.map(o=>`
+    <tr>
+      <td>${new Date(o.ts).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+      <td><b>${o.oid}</b></td>
+      <td>${o.name||'—'}<br><small style="color:var(--ink-soft)">${o.phone||''}</small></td>
+      <td>${o.branch}</td>
+      <td><b>${INR(o.total)}</b></td>
+      <td>${o.paymentId ? '<small style="font-family:monospace">'+o.paymentId+'</small>' : '<small style="color:var(--ink-soft)">—</small>'}</td>
+      <td><span class="hist-status st-${o.status}">${o.status}</span></td>
+    </tr>`).join('') : `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--ink-soft)">No orders found in this date range.</td></tr>`;
+}
 
 function renderAll(flashIds){
   renderStats(); renderTabs(); renderOrders(flashIds||[]);
